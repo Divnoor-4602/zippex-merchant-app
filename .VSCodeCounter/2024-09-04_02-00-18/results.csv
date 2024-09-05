@@ -1,0 +1,63 @@
+"filename", "language", "TypeScript", "TypeScript JSX", "PostCSS", "JSON with Comments", "JSON", "Markdown", "JavaScript", "XML", "comment", "blank", "total"
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/.eslintrc.json", "JSON with Comments", 0, 0, 0, 3, 0, 0, 0, 0, 0, 1, 4
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/README.md", "Markdown", 0, 0, 0, 0, 0, 23, 0, 0, 0, 14, 37
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/components.json", "JSON", 0, 0, 0, 0, 17, 0, 0, 0, 0, 0, 17
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/next.config.mjs", "JavaScript", 0, 0, 0, 0, 0, 0, 2, 0, 1, 2, 5
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/package-lock.json", "JSON", 0, 0, 0, 0, 8017, 0, 0, 0, 0, 1, 8018
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/package.json", "JSON", 0, 0, 0, 0, 56, 0, 0, 0, 0, 1, 57
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/postcss.config.mjs", "JavaScript", 0, 0, 0, 0, 0, 0, 6, 0, 1, 2, 9
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/public/images/zippex-box.svg", "XML", 0, 0, 0, 0, 0, 0, 0, 6, 0, 1, 7
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/public/images/zippex-logo.svg", "XML", 0, 0, 0, 0, 0, 0, 0, 18, 0, 1, 19
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/public/images/zippex-white.svg", "XML", 0, 0, 0, 0, 0, 0, 0, 18, 0, 1, 19
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/public/next.svg", "XML", 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/public/vercel.svg", "XML", 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/src/app/business-on-boarding/page.tsx", "TypeScript JSX", 0, 9, 0, 0, 0, 0, 0, 0, 9, 4, 22
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/src/app/constants/index.tsx", "TypeScript JSX", 0, 78, 0, 0, 0, 0, 0, 0, 0, 3, 81
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/src/app/dashboard/home/page.tsx", "TypeScript JSX", 0, 226, 0, 0, 0, 0, 0, 0, 17, 15, 258
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/src/app/dashboard/layout.tsx", "TypeScript JSX", 0, 17, 0, 0, 0, 0, 0, 0, 2, 5, 24
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/src/app/dashboard/orders/page.tsx", "TypeScript JSX", 0, 110, 0, 0, 0, 0, 0, 0, 12, 27, 149
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/src/app/globals.css", "PostCSS", 0, 0, 68, 0, 0, 0, 0, 0, 4, 6, 78
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/src/app/layout.tsx", "TypeScript JSX", 0, 30, 0, 0, 0, 0, 0, 0, 0, 4, 34
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/src/app/page.tsx", "TypeScript JSX", 0, 12, 0, 0, 0, 0, 0, 0, 0, 5, 17
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/src/app/sign-in/page.tsx", "TypeScript JSX", 0, 11, 0, 0, 0, 0, 0, 0, 0, 3, 14
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/src/app/sign-up/page.tsx", "TypeScript JSX", 0, 9, 0, 0, 0, 0, 0, 0, 0, 3, 12
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/src/components/UploadButton.tsx", "TypeScript JSX", 0, 124, 0, 0, 0, 0, 0, 0, 6, 18, 148
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/src/components/cards/DashboardCard.tsx", "TypeScript JSX", 0, 73, 0, 0, 0, 0, 0, 0, 0, 8, 81
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/src/components/dashboard/DataTable.tsx", "TypeScript JSX", 0, 198, 0, 0, 0, 0, 0, 0, 24, 14, 236
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/src/components/dashboard/TotalOrders.tsx", "TypeScript JSX", 0, 143, 0, 0, 0, 0, 0, 0, 1, 14, 158
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/src/components/forms/OnBoardingForm.tsx", "TypeScript JSX", 0, 183, 0, 0, 0, 0, 0, 0, 4, 19, 206
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/src/components/forms/SignInForm.tsx", "TypeScript JSX", 0, 175, 0, 0, 0, 0, 0, 0, 4, 15, 194
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/src/components/forms/SignUpForm.tsx", "TypeScript JSX", 0, 333, 0, 0, 0, 0, 0, 0, 12, 26, 371
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/src/components/shared/DataTableColumnHeader.tsx", "TypeScript JSX", 0, 68, 0, 0, 0, 0, 0, 0, 0, 5, 73
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/src/components/shared/MobileNav.tsx", "TypeScript JSX", 0, 76, 0, 0, 0, 0, 0, 0, 1, 7, 84
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/src/components/shared/Pagination.tsx", "TypeScript JSX", 0, 94, 0, 0, 0, 0, 0, 0, 0, 4, 98
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/src/components/shared/ProfileDropdown.tsx", "TypeScript JSX", 0, 34, 0, 0, 0, 0, 0, 0, 3, 8, 45
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/src/components/shared/Sidebar.tsx", "TypeScript JSX", 0, 73, 0, 0, 0, 0, 0, 0, 0, 8, 81
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/src/components/shared/Topbar.tsx", "TypeScript JSX", 0, 41, 0, 0, 0, 0, 0, 0, 0, 7, 48
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/src/components/shared/filters/TableFilter.tsx", "TypeScript JSX", 0, 119, 0, 0, 0, 0, 0, 0, 0, 8, 127
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/src/components/ui/badge.tsx", "TypeScript JSX", 0, 33, 0, 0, 0, 0, 0, 0, 0, 6, 39
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/src/components/ui/breadcrumb.tsx", "TypeScript JSX", 0, 105, 0, 0, 0, 0, 0, 0, 0, 11, 116
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/src/components/ui/button.tsx", "TypeScript JSX", 0, 53, 0, 0, 0, 0, 0, 0, 0, 6, 59
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/src/components/ui/card.tsx", "TypeScript JSX", 0, 68, 0, 0, 0, 0, 0, 0, 0, 9, 77
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/src/components/ui/chart.tsx", "TypeScript JSX", 0, 332, 0, 0, 0, 0, 0, 0, 2, 37, 371
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/src/components/ui/checkbox.tsx", "TypeScript JSX", 0, 26, 0, 0, 0, 0, 0, 0, 0, 5, 31
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/src/components/ui/command.tsx", "TypeScript JSX", 0, 137, 0, 0, 0, 0, 0, 0, 0, 19, 156
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/src/components/ui/dialog.tsx", "TypeScript JSX", 0, 109, 0, 0, 0, 0, 0, 0, 0, 14, 123
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/src/components/ui/dropdown-menu.tsx", "TypeScript JSX", 0, 187, 0, 0, 0, 0, 0, 0, 0, 19, 206
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/src/components/ui/form.tsx", "TypeScript JSX", 0, 153, 0, 0, 0, 0, 0, 0, 0, 26, 179
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/src/components/ui/input.tsx", "TypeScript JSX", 0, 21, 0, 0, 0, 0, 0, 0, 0, 5, 26
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/src/components/ui/label.tsx", "TypeScript JSX", 0, 21, 0, 0, 0, 0, 0, 0, 0, 6, 27
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/src/components/ui/popover.tsx", "TypeScript JSX", 0, 26, 0, 0, 0, 0, 0, 0, 0, 8, 34
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/src/components/ui/progress.tsx", "TypeScript JSX", 0, 24, 0, 0, 0, 0, 0, 0, 0, 5, 29
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/src/components/ui/select.tsx", "TypeScript JSX", 0, 151, 0, 0, 0, 0, 0, 0, 0, 14, 165
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/src/components/ui/sheet.tsx", "TypeScript JSX", 0, 125, 0, 0, 0, 0, 0, 0, 0, 16, 141
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/src/components/ui/table.tsx", "TypeScript JSX", 0, 110, 0, 0, 0, 0, 0, 0, 0, 11, 121
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/src/components/ui/tabs.tsx", "TypeScript JSX", 0, 48, 0, 0, 0, 0, 0, 0, 0, 8, 56
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/src/components/ui/textarea.tsx", "TypeScript JSX", 0, 20, 0, 0, 0, 0, 0, 0, 0, 5, 25
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/src/components/ui/tooltip.tsx", "TypeScript JSX", 0, 23, 0, 0, 0, 0, 0, 0, 0, 8, 31
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/src/context/context.tsx", "TypeScript JSX", 0, 23, 0, 0, 0, 0, 0, 0, 0, 7, 30
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/src/lib/firebase/index.ts", "TypeScript", 18, 0, 0, 0, 0, 0, 0, 0, 4, 5, 27
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/src/lib/utils.ts", "TypeScript", 35, 0, 0, 0, 0, 0, 0, 0, 0, 6, 41
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/tailwind.config.ts", "TypeScript", 82, 0, 0, 0, 0, 0, 0, 0, 0, 5, 87
+"/Users/divnoor/work-based-projects/Zippex/Zippex-merchant-app/zippex-merchant/tsconfig.json", "JSON with Comments", 0, 0, 0, 26, 0, 0, 0, 0, 0, 1, 27
+"Total", "-", 135, 4031, 68, 29, 8090, 23, 8, 44, 107, 522, 13057

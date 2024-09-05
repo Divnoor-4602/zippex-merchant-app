@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { AuthProvider } from "@/context/context";
+import { Toaster } from "sonner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -16,7 +18,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <head>
+        <script
+          async
+          src={`https://maps.googleapis.com/maps/api/js?key=${process.env.GOOGLE_PLACES_AUTOCOMPLETE_API_KEY}&libraries=places`}
+        ></script>
+      </head>
+      <body className={inter.className}>
+        <AuthProvider>{children}</AuthProvider>
+        <Toaster richColors />
+      </body>
     </html>
   );
 }
