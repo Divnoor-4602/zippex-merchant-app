@@ -17,7 +17,7 @@ import {
 
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 import { db } from "@/lib/firebase";
-import { months } from "@/app/constants";
+import { months } from "@/constants";
 import { collection, onSnapshot, query } from "firebase/firestore";
 import {
   CreditCard,

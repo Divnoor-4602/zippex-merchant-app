@@ -13,7 +13,7 @@ import { Button } from "../ui/button";
 import Image from "next/image";
 import Link from "next/link";
 import logo from "../../../public/images/zippex-white.svg";
-import { sidebarMenu } from "@/app/constants";
+import { sidebarMenu } from "@/constants";
 import { usePathname } from "next/navigation";
 
 const MobileNav = () => {

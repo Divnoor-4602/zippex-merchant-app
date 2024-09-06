@@ -39,11 +39,13 @@ import { DataTablePagination } from "../shared/Pagination";
 interface OrderHistoryTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  handleCurrentOrder: (order: any) => void;
 }
 
 export function OrderHistoryTable<TData, TValue>({
   columns,
   data,
+  handleCurrentOrder,
 }: OrderHistoryTableProps<TData, TValue>) {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -187,6 +189,7 @@ export function OrderHistoryTable<TData, TValue>({
                         .getVisibleCells()[0]
                         .getValue() as string;
                       let orderId = orderDetails.split(" ")[2];
+                      handleCurrentOrder(orderId);
                     }}
                   >
                     {row.getVisibleCells().map((cell) => (

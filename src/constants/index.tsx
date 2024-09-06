@@ -23,11 +23,6 @@ export const sidebarMenu = [
     path: "/dashboard/orders",
   },
   {
-    title: "Products",
-    icon: <Package className="size-5" />,
-    path: "/dashboard/products",
-  },
-  {
     title: "Inventory",
     icon: <Archive className="size-5" />,
     path: "/dashboard/inventory",
