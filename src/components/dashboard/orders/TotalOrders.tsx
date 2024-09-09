@@ -13,7 +13,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import React from "react";
 import { DataTable } from "./DataTable";
 import { format } from "date-fns";
-import { DataTableColumnHeader } from "../shared/DataTableColumnHeader";
+import { DataTableColumnHeader } from "../../shared/DataTableColumnHeader";
 
 interface TotalOrdersProps {
   recurrence: string;

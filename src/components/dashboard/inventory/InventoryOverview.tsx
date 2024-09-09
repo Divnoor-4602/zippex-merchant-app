@@ -12,7 +12,6 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
 } from "@tanstack/react-table";
-
 import {
   Table,
   TableBody,
@@ -22,8 +21,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import React from "react";
-import { Input } from "@/components/ui/input";
-import TableFilter from "../shared/filters/TableFilter";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -32,21 +29,19 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "../ui/button";
+import { Button } from "../../ui/button";
 import { SlidersHorizontal } from "lucide-react";
-import { DataTablePagination } from "../shared/Pagination";
+import { DataTablePagination } from "../../shared/Pagination";
 
-interface OrderHistoryTableProps<TData, TValue> {
+interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
-  handleCurrentOrder: (order: any) => void;
 }
 
-export function OrderHistoryTable<TData, TValue>({
+export function InventoryOverview<TData, TValue>({
   columns,
   data,
-  handleCurrentOrder,
-}: OrderHistoryTableProps<TData, TValue>) {
+}: DataTableProps<TData, TValue>) {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
@@ -96,32 +91,6 @@ export function OrderHistoryTable<TData, TValue>({
     <>
       {/* menu bar */}
       <div className="flex mb-4 gap-2">
-        {/* search by customer name */}
-        <Input
-          placeholder="Customer name"
-          value={
-            (table.getColumn("customer")?.getFilterValue() as string) ?? ""
-          }
-          onChange={(event) =>
-            table.getColumn("customer")?.setFilterValue(event.target.value)
-          }
-          className="max-w-[250px] h-[30px] no-focus"
-        />
-
-        {/* filter by status */}
-        <TableFilter
-          filterList={statusFilterList}
-          valueEvent={(value: string) => {
-            table.getColumn("status")?.setFilterValue(value);
-          }}
-          text={"Status"}
-          value={(table.getColumn("status")?.getFilterValue() as string) ?? ""}
-          clearAllFilters={table.resetColumnFilters}
-          clearCurrentFilter={() => {
-            table.getColumn("status")?.setFilterValue("");
-          }}
-        />
-
         {/* filter columns */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -184,13 +153,6 @@ export function OrderHistoryTable<TData, TValue>({
                   <TableRow
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
-                    onClick={() => {
-                      let orderDetails = row
-                        .getVisibleCells()[0]
-                        .getValue() as string;
-                      let orderId = orderDetails.split(" ")[2];
-                      handleCurrentOrder(orderId);
-                    }}
                   >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id}>

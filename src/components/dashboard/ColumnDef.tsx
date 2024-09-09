@@ -80,3 +80,30 @@ export const columns: ColumnDef<any>[] = [
     accessorKey: "date",
   },
 ];
+
+export const inventoryOverviewColumns: ColumnDef<any>[] = [
+  // name
+  {
+    header: ({ column }) => {
+      return <DataTableColumnHeader column={column} title="Name" />;
+    },
+    accessorKey: "name",
+    cell: (row: any) => {},
+  },
+  // total sales
+  {
+    header: ({ column }) => {
+      return <DataTableColumnHeader column={column} title="Total Orders" />;
+    },
+    accessorKey: "totalOrders",
+    cell: (row: any) => {},
+  },
+  // price
+  {
+    header: ({ column }) => {
+      return <DataTableColumnHeader column={column} title="Price" />;
+    },
+    accessorKey: "price",
+    cell: (row: any) => {},
+  },
+];

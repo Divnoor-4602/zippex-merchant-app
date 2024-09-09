@@ -1,7 +1,7 @@
 "use client";
 
 import { Copy, StickyNote } from "lucide-react";
-import { Button } from "../ui/button";
+import { Button } from "../../ui/button";
 import {
   Card,
   CardHeader,
@@ -9,15 +9,15 @@ import {
   CardDescription,
   CardContent,
   CardFooter,
-} from "../ui/card";
-import { Separator } from "../ui/separator";
+} from "../../ui/card";
+import { Separator } from "../../ui/separator";
 import { format } from "date-fns";
 import {
   TooltipProvider,
   TooltipTrigger,
   TooltipContent,
   Tooltip,
-} from "../../components/ui/tooltip";
+} from "../../ui/tooltip";
 import { capitalizeFirstLetter } from "@/lib/utils";
 import jsPDF from "jspdf";
 import "jspdf-autotable";

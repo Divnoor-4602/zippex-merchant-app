@@ -2,9 +2,9 @@
 
 import DashboardCard from "@/components/cards/DashboardCard";
 import z from "zod";
-import { OrderHistoryTable } from "@/components/dashboard/OrderHistoryTable";
+import { OrderHistoryTable } from "@/components/dashboard/orders/OrderHistoryTable";
 import { columns } from "@/components/dashboard/ColumnDef";
-import TotalOrders from "@/components/dashboard/TotalOrders";
+import TotalOrders from "@/components/dashboard/orders/TotalOrders";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { auth, db } from "@/lib/firebase";
 import {
@@ -35,7 +35,7 @@ import {
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 
-import { OrderDetails } from "@/components/dashboard/OrderDetails";
+import { OrderDetails } from "@/components/dashboard/orders/OrderDetails";
 
 import { toast } from "sonner";
 import {
@@ -58,7 +58,6 @@ const Page = () => {
   const [dailyOrders, setDailyOrders] = useState<any>([]);
   const [monthlyOrders, setMonthlyOrders] = useState<any>([]);
 
-  const [isLoading, setIsloading] = useState<boolean>(false);
   const [currentOrder, setCurrentOrder] = useState<any>(null);
   const [searchText, setSearchText] = useState<string>("");
 

@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/table";
 import React from "react";
 import { Input } from "@/components/ui/input";
-import TableFilter from "../shared/filters/TableFilter";
+import TableFilter from "../../shared/filters/TableFilter";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -32,19 +32,21 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "../ui/button";
+import { Button } from "../../ui/button";
 import { SlidersHorizontal } from "lucide-react";
-import { DataTablePagination } from "../shared/Pagination";
+import { DataTablePagination } from "../../shared/Pagination";
 
-interface DataTableProps<TData, TValue> {
+interface OrderHistoryTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  handleCurrentOrder: (order: any) => void;
 }
 
-export function DataTable<TData, TValue>({
+export function OrderHistoryTable<TData, TValue>({
   columns,
   data,
-}: DataTableProps<TData, TValue>) {
+  handleCurrentOrder,
+}: OrderHistoryTableProps<TData, TValue>) {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
@@ -154,30 +156,8 @@ export function DataTable<TData, TValue>({
               })}
           </DropdownMenuContent>
         </DropdownMenu>
-
-        {/* filter by type */}
-        {/* <TableFilter
-          text={}
-          value={(table.getColumn("type")?.getFilterValue() as string) ?? ""}
-          valueEvent={(event: any) => {
-            console.log(event);
-
-            table.getColumn("type")?.setFilterValue(event);
-          }}
-          clearCurrentFilter={() => {
-            table.getColumn("type")?.setFilterValue("");
-          }}
-          clearAllFilters={() => {
-            table.resetColumnFilters();
-          }}
-        /> */}
       </div>
       <div className="rounded-md border">
-        {/* filter by type */}
-        {/* date sort asc desc */}
-        {/* amount sort asc desc  */}
-        {/* view columns */}
-
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -204,6 +184,13 @@ export function DataTable<TData, TValue>({
                   <TableRow
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
+                    onClick={() => {
+                      let orderDetails = row
+                        .getVisibleCells()[0]
+                        .getValue() as string;
+                      let orderId = orderDetails.split(" ")[2];
+                      handleCurrentOrder(orderId);
+                    }}
                   >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id}>
