@@ -13,3 +13,6 @@
 // todo: pages in products
 // home: overview of the product table, low stock alert, most ordered product, edit product page and add a new product sheet or page
 // all products
+
+// pages - all products, add new product, edit product
+// functions - delete a product

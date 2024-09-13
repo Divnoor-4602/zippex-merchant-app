@@ -1,8 +1,20 @@
 "use client";
 
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardDescription,
+} from "@/components/ui/card";
 import { auth, db } from "@/lib/firebase";
-import { ArrowBigDownDash, Box, ChartSpline, OctagonAlert } from "lucide-react";
+import {
+  ArrowBigDownDash,
+  Box,
+  ChartSpline,
+  CirclePlus,
+  OctagonAlert,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
 import { collection, doc, getDoc, getDocs } from "firebase/firestore";
@@ -16,12 +28,16 @@ import { MostOrderedGraph } from "@/components/dashboard/inventory/MostOrderedGr
 import { LowStockGraph } from "@/components/dashboard/inventory/LowStockGraph";
 import { InventoryOverview } from "@/components/dashboard/inventory/InventoryOverview";
 import { inventoryOverviewColumns } from "@/components/dashboard/ColumnDef";
+import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 const Page = () => {
   const [inventory, setInventory] = useState<any>([]);
   const [inventoryOverviewData, setInventoryOverviewData] = useState<any>([]);
 
   const [lowStock, setLowStock] = useState<any>([]);
+
+  const router = useRouter();
 
   useEffect(() => {
     (async () => {
@@ -31,15 +47,29 @@ const Page = () => {
       const merchnatRef = collection(db, "merchants", user!.uid, "inventory");
       const merchantSnap = await getDocs(merchnatRef);
 
-      console.log(merchantSnap.docs);
-
-      // Loop through the documents and log the data
+      // Loop through the documents and log the data after calculating the total sales using the orders
       const totalInventory: any = [];
       merchantSnap.forEach((doc) => {
         totalInventory.push({ id: doc.id, ...doc.data() });
       });
 
+      //   setting inventory
       setInventory((prev: any) => totalInventory);
+
+      console.log(totalInventory);
+
+      // setting inventory overview data
+      setInventoryOverviewData((prev: any) =>
+        totalInventory.map((item: any, index: number) => {
+          return {
+            id: item.id,
+            image: item.imageUrl,
+            name: item.name,
+            totalOrders: item.totalOrders,
+            price: item.price,
+          };
+        })
+      );
 
       // low stock
       const lowestStock = totalInventory.reduce((lowest: any, item: any) => {
@@ -49,6 +79,14 @@ const Page = () => {
       setLowStock((prev: any) => lowestStock);
     })();
   }, []);
+
+  if (inventory.length === 0) {
+    return (
+      <div className="flex justify-center items-center h-96">
+        <div className="text-2xl font-medium">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -105,8 +143,8 @@ const Page = () => {
                     Product name
                   </div>
                   <div className="flex flex-wrap gap-2 items-center">
-                    <Badge variant={"brandNegative"} className="mt-3">
-                      <Box className="size-4 mr-1" />5 units remaining
+                    <Badge variant={"brandPositive"} className="mt-3">
+                      <Box className="size-4 mr-1" />5 units sold
                     </Badge>
                     <Badge variant={"blue"} className="mt-3">
                       Category
@@ -125,10 +163,29 @@ const Page = () => {
         </TooltipProvider>
 
         {/* inventory overview table */}
-        {/* <InventoryOverview columns={inventoryOverviewColumns} data={} /> */}
+        <section className="md:col-span-2">
+          <Card className="col-span-2 overflow-x-hidden">
+            <CardHeader className="px-7">
+              <CardTitle className="flex justify-between flex-col-reverse gap-4 sm:flex-row w-full md:items-center ">
+                <span>Inventory Overview</span>
+              </CardTitle>
+              <CardDescription>
+                Click on all products to view inventory details
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {/* Data Table */}
+              {
+                <InventoryOverview
+                  columns={inventoryOverviewColumns}
+                  data={inventoryOverviewData}
+                />
+              }
+            </CardContent>
+          </Card>
+        </section>
       </main>
     </>
   );
 };
-
 export default Page;

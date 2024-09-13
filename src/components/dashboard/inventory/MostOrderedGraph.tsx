@@ -29,7 +29,7 @@ const chartConfig = {
 
 export function MostOrderedGraph() {
   return (
-    <ChartContainer config={chartConfig}>
+    <ChartContainer config={chartConfig} className="">
       <AreaChart
         accessibilityLayer
         data={chartData}

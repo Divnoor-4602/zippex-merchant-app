@@ -29,9 +29,16 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "../../ui/button";
-import { CirclePlus, SlidersHorizontal } from "lucide-react";
-import { DataTablePagination } from "../../shared/Pagination";
+import { Button } from "../../../ui/button";
+import { CirclePlus, SlidersHorizontal, File } from "lucide-react";
+import { DataTablePagination } from "../../../shared/Pagination";
+import Papa from "papaparse";
+import {
+  TooltipProvider,
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "../../../ui/tooltip";
 import { useRouter } from "next/navigation";
 
 interface DataTableProps<TData, TValue> {
@@ -39,7 +46,7 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
 }
 
-export function InventoryOverview<TData, TValue>({
+export function AllProductsTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
@@ -70,26 +77,74 @@ export function InventoryOverview<TData, TValue>({
     },
   });
 
+  const exportCSV = () => {
+    const tableData = table.getRowModel().rows.map((row) => {
+      const rowData: { [key: string]: any } = {};
+      row.getVisibleCells().forEach((cell) => {
+        rowData[cell.column.id] = cell.getValue();
+      });
+      return rowData;
+    });
+
+    const tableHeaders = table.getHeaderGroups().map((headerGroup) => {
+      return headerGroup.headers.map((header) => {
+        return header.getContext();
+      });
+    });
+
+    const tableHeadersData = tableHeaders[0].map((headerData) => {
+      return headerData.header.id;
+    });
+
+    // Use 'Papa.unparse' to include headers in CSV
+    const csv = Papa.unparse({
+      fields: tableHeadersData, // CSV headers
+      data: tableData, // CSV data
+    });
+
+    // // Create a Blob from the CSV and download it
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "table_data.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <>
       {/* menu bar */}
-      <div className="flex mb-4 gap-2 flex-wrap">
+      <div className="flex mb-4 gap-2">
+        {/* add a new product */}
         <Button
-          className="bg-brandblue hover:bg-brandblue/80 w-fit h-[30px] text-xs font-normal sm:ml-auto"
-          onClick={() => {
-            router.push("inventory/add-product");
-          }}
+          className="ml-auto h-[30px] text-xs font-normal bg-brandblue hover:bg-brandblue/80"
+          onClick={() => router.push("add-product")}
         >
-          <CirclePlus className="size-4 mr-1" /> Add Product
+          <CirclePlus className="size-4 mr-1" />
+          Add Product
         </Button>
-        <Button
-          //   className="bg-brandblue hover:bg-brandblue/80"
-          variant={"outline"}
-          className="w-fit h-[30px] text-xs font-normal"
-          onClick={() => router.push("inventory/all-products")}
-        >
-          All products
-        </Button>
+        {/* todo: filter by category or subcategories */}
+
+        {/* export csv */}
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant={"outline"}
+                className="h-[30px] text-xs font-normal"
+                onClick={exportCSV}
+              >
+                <File className="size-4 mr-2" />
+                Export
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent className="bg-brandblue">
+              <p>Click to export inventory as csv.</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
 
         {/* filter columns */}
         <DropdownMenu>
@@ -145,13 +200,16 @@ export function InventoryOverview<TData, TValue>({
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => {
+              table.getRowModel().rows.map((row: any) => {
+                const rowData = row.original;
+
                 return (
                   <TableRow
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
+                    onClick={() => router.push(`product/${rowData.id}`)}
                   >
-                    {row.getVisibleCells().map((cell) => (
+                    {row.getVisibleCells().map((cell: any) => (
                       <TableCell key={cell.id}>
                         {flexRender(
                           cell.column.columnDef.cell,
