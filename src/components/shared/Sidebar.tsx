@@ -3,7 +3,7 @@
 import Image from "next/image";
 import logo from "../../../public/images/zippex-white.svg";
 import box from "../../../public/images/zippex-box.svg";
-import { sidebarMenu } from "@/app/constants";
+import { sidebarMenu } from "@/constants";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import {

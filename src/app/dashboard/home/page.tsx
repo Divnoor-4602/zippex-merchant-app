@@ -16,8 +16,8 @@ import {
 } from "@/components/ui/chart";
 
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
-import { db } from "@/lib/firebase";
-import { months } from "@/app/constants";
+import { auth, db } from "@/lib/firebase";
+import { months } from "@/constants";
 import { collection, onSnapshot, query } from "firebase/firestore";
 import {
   CreditCard,
@@ -31,11 +31,9 @@ import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
 import DashboardCard from "@/components/cards/DashboardCard";
 import { Progress } from "@/components/ui/progress";
-import MobileNav from "@/components/shared/MobileNav";
 
 const Page = () => {
   const description = "A bar chart";
-
   const date = new Date();
   const currentMonth = months[date.getMonth()];
   const currentYear = date.getFullYear();
