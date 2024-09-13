@@ -14,12 +14,12 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       <main className="flex">
         {/* sidebar */}
         <Sidebar />
-        <div className="bg-muted/40 w-full ">
+        <div className="bg-muted/40 w-full min-h-screen">
           <Topbar />
           <div className="ml-6 mt-3">
             <MobileNav />
           </div>
-          <section className="mt-6 md:mt-12 md:mx-12 mx-6">{children}</section>
+          <section className="mt-6 md:mx-12 mx-6">{children}</section>
         </div>
       </main>
     </>

@@ -18,7 +18,7 @@ const Sidebar = () => {
 
   return (
     <>
-      <aside className="max-sm:hidden lg:min-w-[240px] bg-brandblue min-h-screen max-lg:px-6">
+      <aside className="max-sm:hidden lg:min-w-[240px] bg-brandblue h-screen max-lg:px-6 sticky top-0 left-0">
         <div className="flex lg:justify-center gap-2 mt-10 lg:ml-4 lg:flex-col flex-row items-center lg:items-start">
           <Image
             src={logo}

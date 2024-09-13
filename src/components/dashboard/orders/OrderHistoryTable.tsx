@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/table";
 import React from "react";
 import { Input } from "@/components/ui/input";
-import TableFilter from "../shared/filters/TableFilter";
+import TableFilter from "../../shared/filters/TableFilter";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -32,18 +32,20 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "../ui/button";
+import { Button } from "../../ui/button";
 import { SlidersHorizontal } from "lucide-react";
-import { DataTablePagination } from "../shared/Pagination";
+import { DataTablePagination } from "../../shared/Pagination";
 
 interface OrderHistoryTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  handleCurrentOrder: (order: any) => void;
 }
 
 export function OrderHistoryTable<TData, TValue>({
   columns,
   data,
+  handleCurrentOrder,
 }: OrderHistoryTableProps<TData, TValue>) {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -187,6 +189,7 @@ export function OrderHistoryTable<TData, TValue>({
                         .getVisibleCells()[0]
                         .getValue() as string;
                       let orderId = orderDetails.split(" ")[2];
+                      handleCurrentOrder(orderId);
                     }}
                   >
                     {row.getVisibleCells().map((cell) => (

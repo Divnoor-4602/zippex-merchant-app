@@ -9,8 +9,7 @@ import {
 import Dropzone from "react-dropzone";
 import { collection, updateDoc, doc } from "firebase/firestore";
 import { Button } from "./ui/button";
-import { useRouter } from "next/navigation";
-import { Progress } from "@radix-ui/react-progress";
+
 import { Cloud, Loader2, File } from "lucide-react";
 import { useState } from "react";
 import { auth, db, storage } from "@/lib/firebase";

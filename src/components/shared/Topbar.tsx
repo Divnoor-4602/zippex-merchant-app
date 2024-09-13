@@ -10,6 +10,7 @@ import ProfileDropdown from "./ProfileDropdown";
 import { usePathname, useRouter } from "next/navigation";
 
 import React from "react";
+import { capitalizeFirstLetter } from "@/lib/utils";
 
 const Topbar = () => {
   const router = useRouter();
@@ -30,7 +31,7 @@ const Topbar = () => {
                   <BreadcrumbItem
                     className={`cursor-default ${isLast ? "text-black" : ""} `}
                   >
-                    {path}
+                    {capitalizeFirstLetter(path)}
                   </BreadcrumbItem>
                   {isLast ? <></> : <BreadcrumbSeparator />}
                 </React.Fragment>
