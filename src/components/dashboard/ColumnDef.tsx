@@ -324,6 +324,7 @@ export const allProductsColumns: ColumnDef<any>[] = [
     id: "actions",
     cell: ({ row }) => {
       const data = row.original;
+      // todo: open the sheet on clicking edit
 
       return (
         <DropdownMenu>
