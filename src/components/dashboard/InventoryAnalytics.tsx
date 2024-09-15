@@ -1,7 +1,5 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { collection, query, where, getDocs } from "firebase/firestore";
-import { auth, db } from "@/lib/firebase";
 import {
   Bar,
   BarChart,
@@ -10,12 +8,6 @@ import {
   ResponsiveContainer,
   LabelList,
 } from "recharts";
-import {
-  ChartConfig,
-  // ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
 import {
   Accordion,
   AccordionContent,
@@ -31,6 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Inventory } from "@/lib/types";
+import { Filter } from "lucide-react";
 
 // Imports end here
 
@@ -58,6 +51,7 @@ const InventoryAnalytics = ({ inventory }: { inventory: Inventory[] }) => {
     setQuantitySold(() => {
       const bufferedArray: { name: string; quantity: number }[] = [];
       inventory.forEach((item) => {
+        if (item.totalOrders === 0) return;
         bufferedArray.push({
           name: item.name,
           quantity: item.totalOrders,
@@ -99,30 +93,47 @@ const InventoryAnalytics = ({ inventory }: { inventory: Inventory[] }) => {
       quantity: item.quantity,
     };
   });
+
+  console.log(restockList);
   return (
-    <Accordion type="single" collapsible>
+    <Accordion
+      type="single"
+      collapsible
+      className="max-w-full flex flex-col gap-9 focus:none"
+    >
       {/* Present Inventory */}
       <AccordionItem
         value="presentInventory"
-        className="w-full p-5 flex flex-col gap-5"
+        className="w-full p-5 max-md:p-0 flex flex-col gap-5"
       >
-        <AccordionTrigger className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold">Present Inventory</h2>
+        <AccordionTrigger className="flex justify-between items-center focus:none">
+          <h2 className="text-2xl max-md:text-xl max-sm:text-lg font-bold">
+            Present Inventory
+          </h2>
           <Select onValueChange={(value) => setCategory(value)}>
-            <SelectTrigger className="max-w-fit px-4">
-              <SelectValue placeholder="Filter by category" />
+            <SelectTrigger className="max-w-fit px-4 max-md:px-2 max-md:text-xs">
+              <SelectValue
+                placeholder={
+                  <>
+                    <span className="max-md:hidden">Filter by category</span>
+                    <span className="md:hidden">
+                      <Filter size={14} />
+                    </span>
+                  </>
+                }
+              />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All</SelectItem>
               {categoryList?.map((item) => (
-                <SelectItem key={item} value={item}>
+                <SelectItem key={item} value={item} className="max-md:text-xs">
                   {item}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </AccordionTrigger>
-        <AccordionContent>
+        <AccordionContent className="w-full">
           {activeInventory?.length === 0 ? (
             <div className="w-full h-full flex justify-center items-center min-h-24">
               No Items Found
@@ -156,10 +167,12 @@ const InventoryAnalytics = ({ inventory }: { inventory: Inventory[] }) => {
       {/* Top Selling Items */}
       <AccordionItem
         value="topSellingItems"
-        className="w-full p-5 flex flex-col gap-5"
+        className="w-full p-5 max-md:p-0 flex flex-col gap-5"
       >
         <AccordionTrigger className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold">Top Selling Items</h2>
+          <h2 className="text-2xl max-md:text-xl max-sm:text-lg font-bold">
+            Top Selling Items
+          </h2>
         </AccordionTrigger>
         <AccordionContent>
           {quantitySold.length === 0 ? (
@@ -195,10 +208,12 @@ const InventoryAnalytics = ({ inventory }: { inventory: Inventory[] }) => {
       {/* Least Selling Items */}
       <AccordionItem
         value="leastSellingItems"
-        className="w-full p-5 flex flex-col gap-5"
+        className="w-full p-5 max-md:p-0 flex flex-col gap-5"
       >
         <AccordionTrigger className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold">Least Selling Items</h2>
+          <h2 className="text-2xl max-md:text-xl max-sm:text-lg font-bold">
+            Least Selling Items
+          </h2>
         </AccordionTrigger>
         <AccordionContent>
           {quantitySold.length === 0 ? (
@@ -234,10 +249,10 @@ const InventoryAnalytics = ({ inventory }: { inventory: Inventory[] }) => {
       {/* Items likely needed to be restocked */}
       <AccordionItem
         value="restockList"
-        className="w-full p-5 flex flex-col gap-5"
+        className="w-full p-5 max-md:p-0 flex flex-col gap-5"
       >
         <AccordionTrigger className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold">
+          <h2 className="text-2xl max-md:text-xl max-sm:text-lg font-bold">
             Items likely needed to be restocked
           </h2>
         </AccordionTrigger>
@@ -255,7 +270,7 @@ const InventoryAnalytics = ({ inventory }: { inventory: Inventory[] }) => {
               <BarChart
                 accessibilityLayer
                 layout="vertical"
-                data={quantitySold.toReversed()}
+                data={restockList}
                 margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
                 barSize={40}
                 barCategoryGap={0}

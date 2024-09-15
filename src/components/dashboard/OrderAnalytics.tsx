@@ -143,7 +143,6 @@ const OrderAnalytics = ({ orders }: { orders: Order[] }) => {
 
     const currentMonth = new Date().getMonth() + 1;
     const lastMonth = new Date().getMonth();
-    //!You are currently creating monthly revenue growth!!!
     setRevenueGrowth([
       {
         name: "Last Month",
@@ -254,77 +253,80 @@ const OrderAnalytics = ({ orders }: { orders: Order[] }) => {
             </div>
           </div>
           <div>
-            {scope === "year" && yearData.length > 0 ? (
-              <ResponsiveContainer
-                width={"100%"}
-                height={500}
-                className=" w-full border rounded-lg px-5 max-sm:px-0 py-1 h-full min-h-[400px]
+            {scope === "year" &&
+              (yearData?.length > 0 ? (
+                <ResponsiveContainer
+                  width={"100%"}
+                  height={500}
+                  className=" w-full border rounded-lg px-5 max-sm:px-0 py-1 h-full min-h-[400px]
 aspect-square"
-              >
-                <LineChart data={yearData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey={"name"} />
-                  <YAxis dataKey={"subtotal"} />
-                  <Line
-                    type={"monotone"}
-                    dataKey={"revenue"}
-                    stroke={"#8884d8"}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="flex justify-center items-center min-h-[200px]">
-                <h1 className="text-2xl font-bold">No Data Available</h1>
-              </div>
-            )}
+                >
+                  <LineChart data={yearData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey={"name"} />
+                    <YAxis dataKey={"subtotal"} />
+                    <Line
+                      type={"monotone"}
+                      dataKey={"revenue"}
+                      stroke={"#8884d8"}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex justify-center items-center min-h-[200px]">
+                  <h1 className="text-2xl font-bold">No Data Available</h1>
+                </div>
+              ))}
 
-            {scope === "month" && monthData[currentMonthScope]?.length > 0 ? (
-              <ResponsiveContainer
-                width={"100%"}
-                height={500}
-                className="w-full border rounded-lg px-5 max-sm:px-0 py-1 h-full min-h-[400px]
+            {scope === "month" &&
+              (monthData[currentMonthScope]?.length > 0 ? (
+                <ResponsiveContainer
+                  width={"100%"}
+                  height={500}
+                  className="w-full border rounded-lg px-5 max-sm:px-0 py-1 h-full min-h-[400px]
 aspect-square"
-              >
-                <LineChart data={monthData[currentMonthScope]}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey={"name"} />
-                  <YAxis dataKey={"subtotal"} />
-                  <Line
-                    type={"monotone"}
-                    dataKey={"subtotal"}
-                    stroke={"#8884d8"}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="flex justify-center items-center min-h-[200px]">
-                <h1 className="text-2xl font-bold">No Data Available</h1>
-              </div>
-            )}
+                >
+                  <LineChart data={monthData[currentMonthScope]}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey={"name"} />
+                    <YAxis dataKey={"subtotal"} />
+                    <Line
+                      type={"monotone"}
+                      dataKey={"subtotal"}
+                      stroke={"#8884d8"}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex justify-center items-center min-h-[200px]">
+                  <h1 className="text-2xl font-bold">No Data Available</h1>
+                </div>
+              ))}
 
-            {scope === "week" && weekData.length > 0 ? (
-              <ResponsiveContainer
-                width={"100%"}
-                height={500}
-                className="w-full border rounded-lg px-5 max-sm:px-0 py-1 h-full min-h-[400px]
+            {scope === "week" &&
+              (weekData?.length > 0 ? (
+                <ResponsiveContainer
+                  width={"100%"}
+                  height={500}
+                  className="w-full border rounded-lg px-5 max-sm:px-0 py-1 h-full min-h-[400px]
 aspect-square"
-              >
-                <LineChart data={weekData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey={"name"} />
-                  <YAxis dataKey={"subtotal"} />
-                  <Line
-                    type={"monotone"}
-                    dataKey={"subtotal"}
-                    stroke={"#8884d8"}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="flex justify-center items-center min-h-[200px]">
-                <h1 className="text-2xl font-bold">No Data Available</h1>
-              </div>
-            )}
+                >
+                  <LineChart data={weekData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey={"name"} />
+                    <YAxis dataKey={"subtotal"} />
+                    <Line
+                      type={"monotone"}
+                      dataKey={"subtotal"}
+                      stroke={"#8884d8"}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex justify-center items-center min-h-[200px]">
+                  <h1 className="text-2xl font-bold">No Data Available</h1>
+                </div>
+              ))}
           </div>
         </div>
       </div>

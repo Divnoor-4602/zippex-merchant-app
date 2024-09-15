@@ -94,7 +94,7 @@ export const OrderDetails = ({ currentOrder }: OrderDetailsProps) => {
     });
 
     // Total price
-    y = doc.lastAutoTable.finalY + 10;
+    y = (doc as any).lastAutoTable.finalY + 10;
     doc.setFontSize(12);
     doc.text(`Total: $${totalPrice}`, margin, y);
 

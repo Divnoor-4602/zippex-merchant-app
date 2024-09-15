@@ -50,6 +50,8 @@ const Page = () => {
     })();
   }, []);
 
+  console.log(merchantOrders);
+
   return (
     <main>
       <Tabs defaultValue="inventory">

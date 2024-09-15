@@ -45,7 +45,7 @@ const UploadDropzone = ({
           return (
             <div
               {...getRootProps()}
-              className="border  border-dashed rounded-lg border-gray-300 h-56"
+              className="border  border-dashed rounded-lg border-gray-300 h-56 w-full"
             >
               <div className="flex items-center w-full h-full">
                 <div className="flex flex-col items-center justify-center rounded-lg w-full h-full cursor-pointer bg-gray-100 hover:bg-gray-200">
