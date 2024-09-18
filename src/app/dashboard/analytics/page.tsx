@@ -53,7 +53,7 @@ const Page = () => {
   console.log(merchantOrders);
 
   return (
-    <main>
+    <main className="w-full">
       <Tabs defaultValue="inventory">
         <TabsList>
           <TabsTrigger value="inventory">Inventory</TabsTrigger>
@@ -63,7 +63,7 @@ const Page = () => {
         <TabsContent value="inventory">
           <InventoryAnalytics inventory={merchantInventory} />
         </TabsContent>
-        <TabsContent value="sales">
+        <TabsContent value="sales" className="w-full">
           <OrderAnalytics orders={merchantOrders} />
         </TabsContent>
       </Tabs>

@@ -11,7 +11,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     <>
       {/* main block */}
 
-      <main className="flex">
+      <main className="flex max-w-screen">
         {/* sidebar */}
         <Sidebar />
         <div className="bg-muted/40 w-full min-h-screen">
