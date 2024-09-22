@@ -153,7 +153,7 @@ const Page = () => {
   // format orders for order history table
   const orderHistoryOrders = monthlyOrders.map((order: any) => {
     return {
-      customer: `${order.customer.firstName} ${order.customer.lastName} ${order.id}`,
+      customer: `${order.customer?.firstName} ${order.customer?.lastName} ${order.id}`,
       type: order.orderType,
       date: format(order.createdAt.seconds * 1000, "MM-dd-yyyy"),
       status: order.orderStatus,
@@ -297,8 +297,8 @@ const Page = () => {
                       Customer
                     </div>
                     <div className="text-sm font-normal">
-                      {capitalizeFirstLetter(currentOrder.customer.firstName)}{" "}
-                      {capitalizeFirstLetter(currentOrder.customer.lastName)}
+                      {capitalizeFirstLetter(currentOrder.customer?.firstName)}{" "}
+                      {capitalizeFirstLetter(currentOrder.customer?.lastName)}
                     </div>
                   </div>
                   <div className="flex justify-between">

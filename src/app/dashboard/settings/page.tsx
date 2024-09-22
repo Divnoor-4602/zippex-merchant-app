@@ -109,6 +109,8 @@ const SettingsPage = () => {
     }
   };
 
+  console.log(merchantData);
+
   return (
     <section className="flex flex-col gap-6 my-10">
       <h1 className="text-3xl font-bold my-3">Settings</h1>
@@ -259,7 +261,7 @@ const SettingsPage = () => {
             ) : (
               <LabelInput
                 label="Business Address"
-                value={merchantData?.businessAddress.description}
+                value={merchantData?.businessAddress?.description}
                 isDisabled={true}
                 handleChange={() => {}}
               />
@@ -271,6 +273,7 @@ const SettingsPage = () => {
             {editEnabled ? (
               <UploadProductImage
                 handleProductImageUrl={handleProductImageUrl}
+                size="large"
               />
             ) : (
               <Image

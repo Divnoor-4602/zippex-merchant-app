@@ -25,14 +25,16 @@ const LabelInput = ({
         {label}
       </label>
       {isDisabled ? (
-        <div
-          className={cn(
-            "truncate overflow-x-hidden max-w-full",
-            valueClassName
-          )}
-        >
-          {value}
-        </div>
+        value && (
+          <div
+            className={cn(
+              "truncate overflow-x-hidden max-w-full",
+              valueClassName
+            )}
+          >
+            {value}
+          </div>
+        )
       ) : (
         <input
           id={label}

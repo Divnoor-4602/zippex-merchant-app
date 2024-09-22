@@ -16,7 +16,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function capitalizeFirstLetter(word: string) {
-  return word.charAt(0).toUpperCase() + word.slice(1);
+  return word?.charAt(0).toUpperCase() + word?.slice(1);
 }
 
 export function getPreviousWeekRange() {
