@@ -100,7 +100,7 @@ const SignInForm = () => {
   return (
     <>
       <Card className="mx-auto mx-w-sm ">
-        <CardHeader className="flex justify-center items-center">
+        <CardHeader className="flex flex-col justify-center items-center">
           <Image
             src={merchantLogo}
             alt="Merchant Logo"
