@@ -159,7 +159,7 @@ const SignUpForm = () => {
   return (
     <>
       <Card className="mx-auto max-w-md z-10">
-        <CardHeader className="flex justify-center items-center">
+        <CardHeader className=" flex flex-col justify-center items-center">
           <Image
             src={merchantLogo}
             alt="Merchant Logo"
