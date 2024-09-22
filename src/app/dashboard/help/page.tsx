@@ -10,36 +10,13 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import {
-  SearchIcon,
-  PhoneIcon,
-  BellIcon,
-  BookOpenIcon,
-  TruckIcon,
-  DollarSignIcon,
-} from "lucide-react";
+import { SearchIcon, PhoneIcon, BellIcon } from "lucide-react";
+import helpCenter from "@/constants/help-center";
+import HelpCentreCard from "@/components/cards/HelpCentreCard";
 
 export default function HelpCenterPage() {
   const [searchQuery, setSearchQuery] = useState("");
-
-  const categories = [
-    {
-      icon: <BookOpenIcon className="w-6 h-6" />,
-      title: "Getting Started",
-      description: "Learn the basics of our platform",
-    },
-    {
-      icon: <TruckIcon className="w-6 h-6" />,
-      title: "Order Management",
-      description: "Handle your deliveries efficiently",
-    },
-    {
-      icon: <DollarSignIcon className="w-6 h-6" />,
-      title: "Payments",
-      description: "Understand billing and payouts",
-    },
-  ];
-
+  const [filteredHelpCenter, setFilteredHelpCenter] = useState<any>(helpCenter);
   const faqs = [
     {
       question: "How do I update my store hours?",
@@ -56,8 +33,43 @@ export default function HelpCenterPage() {
       answer:
         "Payments are typically processed within 2-3 business days after the order is completed.",
     },
-    
   ];
+
+  const filteredInventory = (searchQuery: string) => {
+    if (searchQuery === "") {
+      setFilteredHelpCenter(helpCenter);
+      return helpCenter;
+    }
+    setFilteredHelpCenter(() => {
+      const bufferedObject: { [key: string]: number } = {};
+      const bufferedArray: { [key: string]: number }[] = [];
+      Object.keys(helpCenter).map((item) => {
+        if (
+          helpCenter[item as keyof typeof helpCenter].title
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase()) ||
+          helpCenter[item as keyof typeof helpCenter].description
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase())
+        ) {
+          bufferedObject[item] = bufferedObject[item]
+            ? bufferedObject[item]++
+            : 0;
+        }
+        helpCenter[item as keyof typeof helpCenter].topics.map((topic) => {
+          if (
+            topic.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            topic.description.toLowerCase().includes(searchQuery.toLowerCase())
+          ) {
+            bufferedObject[item] = bufferedObject[item]
+              ? bufferedObject[item]++
+              : 0;
+          }
+        });
+      });
+      return bufferedObject;
+    });
+  };
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-8">
@@ -71,25 +83,33 @@ export default function HelpCenterPage() {
           type="text"
           placeholder="Search for help..."
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10 pr-4 py-2 w-full"
+          onChange={(e) => {
+            filteredInventory(e.target.value);
+            setSearchQuery(e.target.value);
+          }}
+          className="pl-10 pr-4 py-2 w-full no-focus"
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {categories.map((category, index) => (
-          <Card key={index}>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                {category.icon}
-                <span>{category.title}</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-gray-600">{category.description}</p>
-            </CardContent>
-          </Card>
-        ))}
+      <div className="grid grid-cols-1 md:grid-cols-3 auto-rows-auto gap-4">
+        {Object.keys(filteredHelpCenter).length === 0 && (
+          <div className="w-full md:col-span-3 text-center text-gray-500 flex items-center justify-center">
+            No results found for &quot;{searchQuery}&quot;
+          </div>
+        )}
+        {filteredHelpCenter &&
+          Object.keys(filteredHelpCenter).map((item) => {
+            return (
+              <HelpCentreCard
+                key={item}
+                title={helpCenter[item as keyof typeof helpCenter].title}
+                description={
+                  helpCenter[item as keyof typeof helpCenter].description
+                }
+                topics={helpCenter[item as keyof typeof helpCenter].topics}
+              />
+            );
+          })}
       </div>
 
       <Card>
@@ -127,7 +147,6 @@ export default function HelpCenterPage() {
           </CardContent>
         </Card>
       </div>
-      
     </div>
   );
 }

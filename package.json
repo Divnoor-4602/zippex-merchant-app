@@ -43,6 +43,7 @@
     "react-firebase-hooks": "^5.1.1",
     "react-google-places-autocomplete": "^4.1.0",
     "react-hook-form": "^7.53.0",
+    "react-markdown": "^8.0.6",
     "recharts": "^2.13.0-alpha.4",
     "sonner": "^1.5.0",
     "tailwind-merge": "^2.5.2",

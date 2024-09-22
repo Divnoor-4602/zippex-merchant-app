@@ -116,16 +116,20 @@ const SettingsPage = () => {
         <CardHeader className="w-full flex  justify-between">
           <CardTitle className="">Edit Details</CardTitle>
           <button
-            className="w-fit active:scale-95 hover:scale-105"
+            className="w-fit active:scale-95 hover:scale-105 flex items-center gap-2"
             onClick={() => {
               setEditEnabled(!editEnabled);
               if (editEnabled) handleSave();
             }}
           >
             {editEnabled ? (
-              <Save height={20} width={20} />
+              <>
+                <Save height={20} width={20} /> Save
+              </>
             ) : (
-              <Edit height={20} width={20} />
+              <>
+                <Edit height={20} width={20} /> Edit
+              </>
             )}
           </button>
         </CardHeader>

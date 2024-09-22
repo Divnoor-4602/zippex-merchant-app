@@ -76,3 +76,13 @@
 .no-focus {
   @apply focus-visible:ring-0  focus-visible:ring-offset-0 !important;
 }
+
+.markdown > * {
+  all: revert;
+}
+
+@media screen and (max-width: 640px) {
+  .markdown {
+    font-size: 10px !important;
+  }
+}
