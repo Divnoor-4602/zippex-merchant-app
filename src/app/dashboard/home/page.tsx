@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/chart";
 
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
-import { db } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
 import { months } from "@/constants";
 import { collection, onSnapshot, query } from "firebase/firestore";
 import {
@@ -31,16 +31,37 @@ import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
 import DashboardCard from "@/components/cards/DashboardCard";
 import { Progress } from "@/components/ui/progress";
-import MobileNav from "@/components/shared/MobileNav";
+
+import { useQuery } from "@tanstack/react-query";
+import { getMonthlyRevenue } from "@/lib/actions/payment.actions";
 
 const Page = () => {
   const description = "A bar chart";
+
+  const merchant = auth.currentUser;
+  const merchnatId = merchant!.uid;
 
   const date = new Date();
   const currentMonth = months[date.getMonth()];
   const currentYear = date.getFullYear();
 
   // todo: fetch data till the current month and make an object out of it
+
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["totalRevenue"],
+    queryFn: async () => {
+      getMonthlyRevenue({
+        merchantId: merchnatId,
+        numMonths: date.getMonth() + 1,
+      });
+    },
+  });
+
+  console.log(data);
+  // const result = useQuery({
+  //   queryKey: ["totalRevenue"],
+  //   queryFn: async () => {},
+  // });
 
   let chartData: any = [];
   for (let i = 0; i < date.getMonth() + 1; i++) {
