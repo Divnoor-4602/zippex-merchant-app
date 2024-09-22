@@ -31,10 +31,15 @@ import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
 import DashboardCard from "@/components/cards/DashboardCard";
 import { Progress } from "@/components/ui/progress";
-import MobileNav from "@/components/shared/MobileNav";
+
+import { useQuery } from "@tanstack/react-query";
+import { getMonthlyRevenue } from "@/lib/actions/payment.actions";
 
 const Page = () => {
   const description = "A bar chart";
+
+  const merchant = auth.currentUser;
+  const merchnatId = merchant!.uid;
 
   const date = new Date();
   const currentMonth = months[date.getMonth()];
