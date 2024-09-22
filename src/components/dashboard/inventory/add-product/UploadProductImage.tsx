@@ -12,12 +12,18 @@ import { toast } from "sonner";
 
 interface UploadProductImageProps {
   handleProductImageUrl: (file: any) => void;
+  existingImageUrl?: string;
+  size: "small" | "large";
 }
 
 const UploadDropzone = ({
   handleLogoUpload,
+  size,
+  existingImageUrl,
 }: {
   handleLogoUpload: (name: string) => void;
+  existingImageUrl?: string;
+  size: "small" | "large";
 }) => {
   return (
     <>
@@ -45,7 +51,9 @@ const UploadDropzone = ({
           return (
             <div
               {...getRootProps()}
-              className="border  border-dashed rounded-lg border-gray-300 h-56 w-full"
+              className={`border border-dashed rounded-lg border-gray-300 ${
+                size === "small" ? "h-24 w-24" : "h-56 "
+              }`}
             >
               <div className="flex items-center w-full h-full">
                 <div className="flex flex-col items-center justify-center rounded-lg w-full h-full cursor-pointer bg-gray-100 hover:bg-gray-200">
@@ -59,10 +67,20 @@ const UploadDropzone = ({
                         className="rounded-lg object-cover"
                       />
                     </>
+                  ) : existingImageUrl ? (
+                    <>
+                      <Image
+                        src={existingImageUrl}
+                        alt="product image"
+                        width={200}
+                        height={200}
+                        className="rounded-lg object-cover"
+                      />
+                    </>
                   ) : (
-                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <ImageIcon className="size-4 text-zinc-500 mb-2 animate-pulse" />
-                    </div>
+                    <>
+                      <ImageIcon className="size-4 text-gray-500 animate-pulse" />
+                    </>
                   )}
 
                   {/* adding the input  */}
@@ -84,8 +102,16 @@ const UploadDropzone = ({
 
 const UploadProductImage = ({
   handleProductImageUrl,
+  existingImageUrl,
+  size,
 }: UploadProductImageProps) => {
-  return <UploadDropzone handleLogoUpload={handleProductImageUrl} />;
+  return (
+    <UploadDropzone
+      handleLogoUpload={handleProductImageUrl}
+      size={size}
+      existingImageUrl={existingImageUrl}
+    />
+  );
 };
 
 export default UploadProductImage;

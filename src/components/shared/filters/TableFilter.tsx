@@ -76,6 +76,8 @@ const TableFilter = ({
                         <Checkbox
                           checked={value === filter.filter}
                           onCheckedChange={(checked) => {
+                            console.log("value: ", value);
+                            console.log("filter: ", filter.filter);
                             if (checked) {
                               valueEvent(filter.filter);
                             } else {

@@ -17,6 +17,10 @@ import { useParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import Image from "next/image";
+import EditProductForm from "@/components/forms/EditProductForm";
 
 const ProductDetails = () => {
   const router = useRouter();
@@ -24,6 +28,11 @@ const ProductDetails = () => {
   const productId = params.productId as string;
 
   const [productDetails, setProductDetails] = useState<any>({});
+
+  const handleProductDetails = (data: any) => {
+    console.log("new deets", data);
+    setProductDetails((prev: any) => data);
+  };
 
   useEffect(() => {
     (async () => {
@@ -65,8 +74,8 @@ const ProductDetails = () => {
 
   return (
     <>
-      <div className="flex w-full items-center justify-between">
-        <div className="flex items-center gap-4">
+      <div className="flex w-full sm:items-center justify-between flex-col-reverse sm:flex-row gap-4">
+        <div className="flex sm:items-center gap-4 flex-col sm:flex-row">
           <Button
             className=""
             size={"icon"}
@@ -76,51 +85,129 @@ const ProductDetails = () => {
             <ChevronLeft className="size-4" />
           </Button>
           <h1 className="text-xl font-semibold">{productDetails.name}</h1>
+          {/* product id badge */}
+          <Badge
+            variant={"outline"}
+            className="cursor-default w-fit text-center"
+          >
+            {productId}
+          </Badge>
         </div>
+        <EditProductForm
+          product={{ ...productDetails, productId }}
+          handleProductDetails={handleProductDetails}
+        />
       </div>
       <section className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-4">
         <Card className="col-span-2">
           <CardHeader>
             <CardTitle>Product Details</CardTitle>
             <CardDescription>
-              Fill in the details of the product you want to add to your
-              inventory.
+              Product specifications and details.
             </CardDescription>
           </CardHeader>
           <CardContent className="">
             <div className="grid gap-6">
-              <Input></Input>
+              {/* name */}
+              <div className="flex flex-col gap-3">
+                <Label>Name</Label>
+                <Input
+                  className="no-focus"
+                  disabled
+                  value={productDetails.name}
+                />
+              </div>
+              {/* description */}
+              <div className="flex flex-col gap-3">
+                <Label>Description</Label>
+                <Input
+                  className="no-focus"
+                  disabled
+                  value={productDetails.description}
+                />
+              </div>
+              {/* category */}
+              <div className="flex flex-col gap-3">
+                <Label>Category</Label>
+                <Input
+                  className="no-focus"
+                  disabled
+                  value={productDetails.category}
+                />
+              </div>
             </div>
           </CardContent>
         </Card>
         {/* quantity, price, fragility */}
-        <Card className="row-start-2 col-span-2">
+        <Card className="sm:row-start-2 col-span-2">
           <CardHeader>
             <CardTitle>Stock</CardTitle>
             <CardDescription>
-              Fill in the quantity, price and fragility of the product.
+              Quantity, price and fragility of the product.
             </CardDescription>
           </CardHeader>
           <CardContent className="">
-            <div className="flex items-center justify-between gap-4 flex-wrap"></div>
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              {/* quantity */}
+              <div className="flex flex-col gap-3">
+                <Label>Quantity</Label>
+                <Input
+                  className="no-focus"
+                  disabled
+                  value={productDetails.quantity}
+                />
+              </div>
+              {/* price */}
+              <div className="flex flex-col gap-3">
+                <Label>Price</Label>
+                <Input
+                  className="no-focus"
+                  disabled
+                  value={productDetails.price}
+                />
+              </div>
+              {/* fragility */}
+              <div className="flex flex-col gap-3">
+                <Label>Fragility</Label>
+                <Input
+                  className="no-focus"
+                  disabled
+                  value={productDetails.fragility}
+                />
+              </div>
+            </div>
           </CardContent>
         </Card>
         {/* product images */}
         {/* get the product image and pass it to the form to add to the product details */}
-        <Card>
+        <Card className="max-sm:col-span-2">
           <CardHeader>
             <CardTitle>Product Image</CardTitle>
-            <CardDescription>Upload an image of the product.</CardDescription>
+            <CardDescription>Image of the product</CardDescription>
           </CardHeader>
-          <CardContent></CardContent>
+          <CardContent className="flex w-full justify-center items-center">
+            <Image
+              src={productDetails.imageUrl}
+              alt={"product details product-image"}
+              width={250}
+              height={250}
+              className="object-cover rounded-lg"
+            />
+          </CardContent>
         </Card>
-        {/* draft the project */}
-        <Card>
+        {/* Total orders of the project */}
+        <Card className="max-sm:col-span-2">
           <CardHeader>
-            <CardTitle>Product Category</CardTitle>
-            <CardDescription>Choose category.</CardDescription>
+            <CardTitle>Total Orders</CardTitle>
+            <CardDescription>
+              Number of times the product has been ordered.
+            </CardDescription>
           </CardHeader>
-          <CardContent></CardContent>
+          <CardContent>
+            <h1 className="text-4xl font-semibold">
+              {productDetails.totalOrders}
+            </h1>
+          </CardContent>
         </Card>
       </section>
     </>

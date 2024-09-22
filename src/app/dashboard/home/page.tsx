@@ -31,14 +31,32 @@ import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
 import DashboardCard from "@/components/cards/DashboardCard";
 import { Progress } from "@/components/ui/progress";
+import MobileNav from "@/components/shared/MobileNav";
 
 const Page = () => {
   const description = "A bar chart";
+
   const date = new Date();
   const currentMonth = months[date.getMonth()];
   const currentYear = date.getFullYear();
 
   // todo: fetch data till the current month and make an object out of it
+
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["totalRevenue"],
+    queryFn: async () => {
+      getMonthlyRevenue({
+        merchantId: merchnatId,
+        numMonths: date.getMonth() + 1,
+      });
+    },
+  });
+
+  console.log(data);
+  // const result = useQuery({
+  //   queryKey: ["totalRevenue"],
+  //   queryFn: async () => {},
+  // });
 
   let chartData: any = [];
   for (let i = 0; i < date.getMonth() + 1; i++) {

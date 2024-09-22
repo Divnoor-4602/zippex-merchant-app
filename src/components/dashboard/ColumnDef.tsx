@@ -5,7 +5,14 @@ import { DataTableColumnHeader } from "../shared/DataTableColumnHeader";
 import { capitalizeFirstLetter } from "@/lib/utils";
 import Image from "next/image";
 import { Badge } from "../ui/badge";
-import { EllipsisIcon, PencilIcon, ShieldIcon, Trash2Icon } from "lucide-react";
+import {
+  EllipsisIcon,
+  PencilIcon,
+  ShieldIcon,
+  TicketX,
+  Trash2Icon,
+  Truck,
+} from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "../ui/button";
 
@@ -17,6 +24,8 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { deleteProduct, editProduct } from "@/lib/actions/product.actions";
+import { log } from "console";
+import { toggleValidationDiscount } from "@/lib/actions/discount.actions";
 
 export const columns: ColumnDef<any>[] = [
   {
@@ -323,6 +332,7 @@ export const allProductsColumns: ColumnDef<any>[] = [
     id: "actions",
     cell: ({ row }) => {
       const data = row.original;
+      // todo: open the sheet on clicking edit
 
       return (
         <DropdownMenu>
@@ -354,6 +364,289 @@ export const allProductsColumns: ColumnDef<any>[] = [
               <span className="flex items-center gap-1">
                 <Trash2Icon className="size-4" />
                 <span>Delete</span>
+              </span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      );
+    },
+  },
+];
+
+export const customerManagementColumns: ColumnDef<any>[] = [
+  // name,
+  {
+    header: ({ column }) => {
+      return <DataTableColumnHeader column={column} title="Name" />;
+    },
+    accessorKey: "name",
+    cell: (row: any) => {
+      const name = row.getValue("name");
+
+      return (
+        <>
+          <div className="font-medium">{name}</div>
+        </>
+      );
+    },
+  },
+  // email
+  {
+    header: ({ column }) => {
+      return <DataTableColumnHeader column={column} title="Email" />;
+    },
+    accessorKey: "email",
+    cell: (row: any) => {
+      const email = row.getValue("email");
+
+      return (
+        <>
+          <div className="font-light">{email}</div>
+        </>
+      );
+    },
+  },
+  // address
+  {
+    header: ({ column }) => {
+      return <DataTableColumnHeader column={column} title="Address" />;
+    },
+    accessorKey: "address",
+    cell: (row: any) => {
+      const address = row.getValue("address");
+
+      return (
+        <>
+          <div className="font-light">{address}</div>
+        </>
+      );
+    },
+  },
+  // phone number
+  {
+    header: ({ column }) => {
+      return <DataTableColumnHeader column={column} title="Phone Number" />;
+    },
+    accessorKey: "phoneNumber",
+    cell: (row: any) => {
+      const phoneNumber = row.getValue("phoneNumber");
+
+      return (
+        <>
+          <div className="font-light">{phoneNumber}</div>
+        </>
+      );
+    },
+  },
+  // last order date
+  {
+    header: ({ column }) => {
+      return <DataTableColumnHeader column={column} title="Latest Order" />;
+    },
+    accessorKey: "lastOrderDate",
+    cell: (row: any) => {
+      const lastOrderDate = row.getValue("lastOrderDate");
+
+      return (
+        <>
+          <div className="font-light">
+            {format(lastOrderDate, "MM-dd-yyyy")}
+          </div>
+        </>
+      );
+    },
+  },
+  // view order action
+  {
+    id: "actions",
+    cell: ({ row }) => {
+      const data = row.original;
+      // todo: open the sheet on clicking edit
+
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <EllipsisIcon className="size-4" />
+              <span className="sr-only">Open menu</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuItem>
+              <span className="flex items-center gap-1">
+                <Truck className="size-4" />
+                <span>View order</span>
+              </span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      );
+    },
+  },
+];
+
+export const allDiscountsColumns: ColumnDef<any>[] = [
+  // code
+  {
+    header: ({ column }) => {
+      return <DataTableColumnHeader column={column} title="Code" />;
+    },
+    accessorKey: "code",
+    cell: (row: any) => {
+      const code = row.getValue("code");
+
+      return (
+        <>
+          <div className="font-medium">{code}</div>
+        </>
+      );
+    },
+  },
+  // eligibleFor : allUsers, newUser
+  {
+    header: ({ column }) => {
+      return <DataTableColumnHeader column={column} title="Eligible For" />;
+    },
+    accessorKey: "eligibleFor",
+    cell: (row: any) => {
+      const eligibleFor = row.getValue("eligibleFor");
+
+      return (
+        <>
+          <div className="">
+            {eligibleFor === "allUsers" ? "All Users" : "New User"}
+          </div>
+        </>
+      );
+    },
+  },
+  // isDiscountValid: true, false (if true show active if false show expored) : Filter
+  {
+    header: ({ column }) => {
+      return <DataTableColumnHeader column={column} title="Valid" />;
+    },
+    accessorKey: "isDiscountValid",
+    cell: (row: any) => {
+      const isDiscountValid = row.getValue("isDiscountValid") as string;
+
+      console.log(isDiscountValid);
+
+      if (isDiscountValid === "true") {
+        return (
+          <>
+            <Badge variant={"brandPositive"}>
+              <span className="">Active</span>
+            </Badge>
+          </>
+        );
+      } else if (isDiscountValid === "false") {
+        return (
+          <>
+            <Badge variant={"brandNegative"}>
+              <span className="">Inactive</span>
+            </Badge>
+          </>
+        );
+      }
+    },
+  },
+  // maxDiscount
+  {
+    header: ({ column }) => {
+      return <DataTableColumnHeader column={column} title="Max Discount" />;
+    },
+    accessorKey: "maxDiscount",
+    cell: (row: any) => {
+      const maxDiscount = row.getValue("maxDiscount");
+
+      return (
+        <>
+          <div className="">{maxDiscount}</div>
+        </>
+      );
+    },
+  },
+  // type: fixed, percentage : Filter
+  {
+    header: ({ column }) => {
+      return <DataTableColumnHeader column={column} title="Type" />;
+    },
+    accessorKey: "type",
+    cell: (row: any) => {
+      const type = row.getValue("type");
+
+      if (type === "fixed") {
+        return (
+          <>
+            <Badge variant={"outline"}>
+              <span className="">Fixed</span>
+            </Badge>
+          </>
+        );
+      } else if (type === "percentage") {
+        return (
+          <>
+            <Badge variant={"outline"}>
+              <span className="">Percentage</span>
+            </Badge>
+          </>
+        );
+      }
+
+      return (
+        <>
+          <div className="">{capitalizeFirstLetter(type)}</div>
+        </>
+      );
+    },
+  },
+  // value
+  {
+    header: ({ column }) => {
+      return <DataTableColumnHeader column={column} title="Value" />;
+    },
+    accessorKey: "value",
+    cell: (row: any) => {
+      const value = row.getValue("value");
+
+      return (
+        <>
+          <div className="">{value}</div>
+        </>
+      );
+    },
+  },
+
+  {
+    id: "actions",
+    cell: ({ row }) => {
+      const data = row.original;
+
+      console.log(data);
+
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <EllipsisIcon className="size-4" />
+              <span className="sr-only">Open menu</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="">
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuItem
+              onClick={() => {
+                toggleValidationDiscount({
+                  discountId: data.id,
+                  currentValidity: data.isDiscountValid,
+                  merchantId: data.merchantId,
+                });
+              }}
+            >
+              <span className="flex items-center gap-1">
+                <TicketX className="size-4" />
+                <span>Invalidate</span>
               </span>
             </DropdownMenuItem>
           </DropdownMenuContent>

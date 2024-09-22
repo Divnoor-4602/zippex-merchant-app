@@ -291,7 +291,7 @@ const AddProductForm = () => {
             </Card>
             {/* product images */}
             {/* get the product image and pass it to the form to add to the product details */}
-            <Card>
+            <Card className="max-sm:col-span-2">
               <CardHeader>
                 <CardTitle>Product Image</CardTitle>
                 <CardDescription>
@@ -301,11 +301,12 @@ const AddProductForm = () => {
               <CardContent>
                 <UploadProductImage
                   handleProductImageUrl={handleProductImageUrl}
+                  size="large"
                 />
               </CardContent>
             </Card>
             {/* draft the project */}
-            <Card>
+            <Card className="max-sm:col-span-2">
               <CardHeader>
                 <CardTitle>Product Category</CardTitle>
                 <CardDescription>Choose category.</CardDescription>

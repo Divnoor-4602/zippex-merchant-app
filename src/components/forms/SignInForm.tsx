@@ -76,7 +76,7 @@ const SignInForm = () => {
         toast.success("Sign in successful! Redirecting to dashboard");
         setLoading((prev) => false);
         form.reset();
-        router.push("/dashboard/home");
+        router.push(`/dashboard/home`);
       } else {
         toast.warning(
           "You need to complete your onboarding process! Redirecting to onboarding"
