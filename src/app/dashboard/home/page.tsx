@@ -33,13 +33,17 @@ import DashboardCard from "@/components/cards/DashboardCard";
 import { Progress } from "@/components/ui/progress";
 
 import { useQuery } from "@tanstack/react-query";
-import { getMonthlyRevenue } from "@/lib/actions/payment.actions";
+import {
+  getMonthlyRevenue,
+  getTotalRevenue,
+} from "@/lib/actions/payment.actions";
+import { getTotalSales } from "@/lib/actions/order.actions";
 
 const Page = () => {
   const description = "A bar chart";
 
   const merchant = auth.currentUser;
-  const merchnatId = merchant!.uid;
+  const merchantId = merchant!.uid;
 
   const date = new Date();
   const currentMonth = months[date.getMonth()];
@@ -50,47 +54,46 @@ const Page = () => {
   const { data, isLoading, isError } = useQuery({
     queryKey: ["totalRevenue"],
     queryFn: async () => {
-      getMonthlyRevenue({
-        merchantId: merchnatId,
+      const monthlyRevenue = await getMonthlyRevenue({
+        merchantId: merchantId,
         numMonths: date.getMonth() + 1,
       });
-    },
-  });
 
-  console.log(data);
-  // const result = useQuery({
-  //   queryKey: ["totalRevenue"],
-  //   queryFn: async () => {},
-  // });
+      const totalRevenue = await getTotalRevenue({
+        merchantId,
+      });
+
+      const totalSales = await getTotalSales({
+        merchantId,
+      });
+
+      return {
+        monthlyRevenue,
+        totalRevenue,
+        totalSales,
+      };
+    },
+    refetchInterval: 6000,
+  });
 
   let chartData: any = [];
   for (let i = 0; i < date.getMonth() + 1; i++) {
     chartData.push({
       month: months[i],
-      totalRevenue: Math.floor(Math.random() * 1000),
+      revenue: Math.floor(Math.random() * 1000),
     });
   }
 
   const chartConfig = {
-    totalRevenue: {
+    revenue: {
       label: "Revenue",
       color: "hsl(var(--chart-1))",
     },
   } satisfies ChartConfig;
 
-  const [items, setItems] = useState<any>(null);
-
-  useEffect(() => {
-    // fetch documents and analystics from the backend
-    // const q = query(collection(db, "merchants"));
-    // const unsubscribe = onSnapshot(q, (querySnapshot) => {
-    //   let itemsArray: any = [];
-    //   querySnapshot.forEach((doc) => {
-    //   itemsArray.push({...doc.data(), id: doc.id});
-    //   });
-    //   setItems((prev: any) => itemsArray);
-    // });
-  }, []);
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <>
@@ -103,7 +106,7 @@ const Page = () => {
           currency={true}
           Icon={() => <DollarSign className="h-4 w-4 text-muted-foreground" />}
           progressValue={20}
-          value={45231.89}
+          value={data?.totalRevenue ?? 0}
           badgeVariant="brandPositive"
         />
         {/* total sales */}
@@ -114,11 +117,11 @@ const Page = () => {
           currency={false}
           Icon={() => <CreditCard className="h-4 w-4 text-muted-foreground" />}
           progressValue={20}
-          value={20}
+          value={data?.totalSales ?? 0}
           badgeVariant="brandNegative"
         />
 
-        {/* total orders */}
+        {/* Number of active discount codes */}
         <DashboardCard
           title="Total Orders"
           badgeValue="10.1%"
@@ -164,7 +167,7 @@ const Page = () => {
           </CardHeader>
           <CardContent>
             <ChartContainer config={chartConfig}>
-              <BarChart accessibilityLayer data={chartData}>
+              <BarChart accessibilityLayer data={data?.monthlyRevenue}>
                 <CartesianGrid vertical={false} />
                 <XAxis
                   dataKey="month"
@@ -177,11 +180,7 @@ const Page = () => {
                   cursor={false}
                   content={<ChartTooltipContent hideLabel />}
                 />
-                <Bar
-                  dataKey="totalRevenue"
-                  fill="var(--color-totalRevenue)"
-                  radius={8}
-                />
+                <Bar dataKey="revenue" fill="var(--color-revenue)" radius={8} />
               </BarChart>
             </ChartContainer>
           </CardContent>
