@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { auth, db, storage } from "@/lib/firebase";
+import { auth, db, storage, isUserMFAEnrolled } from "@/lib/firebase";
 import {
   collection,
   doc,
@@ -12,7 +12,7 @@ import {
   where,
 } from "firebase/firestore";
 import LabelInput from "@/components/ui/LabelInput";
-import { Edit, Save, Upload } from "lucide-react";
+import { Edit, Loader2, Save, Upload } from "lucide-react";
 import UploadProductImage from "@/components/dashboard/inventory/add-product/UploadProductImage";
 import Image from "next/image";
 import GooglePlacesAutocomplete, {
@@ -27,18 +27,10 @@ import {
   uploadBytes,
 } from "firebase/storage";
 import { toast } from "sonner";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 const detailsSchema = z.object({
   ownerName: z.string().min(1, { message: "This field has to be filled" }),
-  email: z
-    .string()
-    .min(1, { message: "This field has to be filled" })
-    .email()
-    .max(50),
-  phoneNumber: z.string().regex(/^(?:\d{10}|\d{3}-\d{3}-\d{4})$/, {
-    message:
-      "Invalid Canadian phone number format. Use 'XXX-XXX-XXXX' or 'XXXXXXXXXX'.",
-  }),
   businessDescription: z
     .string()
     .min(20, { message: "This field has to be filled" })
@@ -47,11 +39,8 @@ const detailsSchema = z.object({
 
 const SettingsPage = () => {
   const [ownerName, setOwnerName] = React.useState<string>("");
-  const [email, setEmail] = React.useState<string>("");
-  const [phoneNumber, setPhoneNumber] = React.useState<string>("");
   const [businessDescription, setBusinessDescription] =
     React.useState<string>("");
-  const [merchantData, setMerchantData] = React.useState<any>(null);
   const [editEnabled, setEditEnabled] = React.useState<boolean>(false);
   const [mapData, setMapData] = React.useState<any>(null);
   const user = auth.currentUser;
@@ -62,18 +51,18 @@ const SettingsPage = () => {
     storage,
     `businessImages/${businessImageUrl?.name}-${user?.uid}`
   );
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    (async () => {
+  const { data: merchantData, isLoading } = useQuery({
+    queryKey: ["merchantData"],
+    queryFn: async () => {
       const merchantDoc = (await getDoc(merchantDocRef)).data();
-      setMerchantData(() => merchantDoc);
-    })();
-  }, []);
+      return merchantDoc;
+    },
+  });
 
   useEffect(() => {
     setOwnerName((prev: any) => merchantData?.ownerName);
-    setEmail((prev: any) => merchantData?.email);
-    setPhoneNumber((prev: any) => merchantData?.phoneNumber);
     setBusinessDescription((prev: any) => merchantData?.businessDescription);
   }, [merchantData]);
 
@@ -84,24 +73,31 @@ const SettingsPage = () => {
 
   const handleSave = async () => {
     try {
-      //delete the old image
-      const oldImageRef = ref(storage, merchantData?.imageUrl);
-      await deleteObject(oldImageRef);
+      let url;
+      console.log(merchantData);
+      if (businessImageUrl) {
+        //delete the old image
+        const oldImageRef = ref(storage, merchantData?.businessImageUrl);
+        await deleteObject(oldImageRef);
 
-      // create an upload task for the selected Image
-      const snapshot = await uploadBytes(storageRef, businessImageUrl);
-      const url = await getDownloadURL(snapshot.ref);
+        // create an upload task for the selected Image
+        const snapshot = await uploadBytes(storageRef, businessImageUrl);
+        url = await getDownloadURL(snapshot.ref);
+
+        console.log(url);
+      } else {
+        url = merchantData?.businessImageUrl;
+      }
 
       //saving merchant details
       toast.promise(
         updateDoc(merchantDocRef, {
           ...merchantData,
           businessImageUrl: url,
-          businessAddress: mapData,
+          businessAddress: mapData ?? merchantData?.businessAddress,
           businessDescription,
-          email,
+
           ownerName,
-          phoneNumber,
         })
       );
     } catch (error) {
@@ -109,17 +105,29 @@ const SettingsPage = () => {
     }
   };
 
+  const { mutate: saveDetails } = useMutation({
+    mutationFn: handleSave,
+    onError: (error) => {
+      toast.error("Error saving details");
+    },
+
+    onSettled: () => {
+      queryClient.refetchQueries({ queryKey: ["merchantData"], type: "all" });
+      toast.success("Details saved successfully");
+    },
+  });
+
   return (
     <section className="flex flex-col gap-6 my-10">
       <h1 className="text-3xl font-bold my-3">Settings</h1>
       <Card>
-        <CardHeader className="w-full flex  justify-between">
+        <CardHeader className="w-full flex flex-row  justify-between">
           <CardTitle className="">Edit Details</CardTitle>
           <button
             className="w-fit active:scale-95 hover:scale-105 flex items-center gap-2"
             onClick={() => {
               setEditEnabled(!editEnabled);
-              if (editEnabled) handleSave();
+              if (editEnabled) saveDetails();
             }}
           >
             {editEnabled ? (
@@ -143,21 +151,25 @@ const SettingsPage = () => {
                 value={ownerName}
                 isDisabled={!editEnabled}
                 handleChange={setOwnerName}
+                isLoading={isLoading}
               />
 
               <LabelInput
                 label="Email"
-                value={email}
-                isDisabled={!editEnabled}
+                value={user?.email ?? ""}
+                isDisabled={true}
                 message="verification required"
-                handleChange={setEmail}
+                handleChange={() => {}}
+                isLoading={isLoading}
               />
+
               <LabelInput
                 label="Phone Number"
-                value={phoneNumber}
-                isDisabled={!editEnabled}
+                value={merchantData?.phoneNumber}
+                isDisabled={true}
                 message="verification required"
-                handleChange={setPhoneNumber}
+                handleChange={() => {}}
+                isLoading={isLoading}
               />
             </CardContent>
           </Card>
@@ -167,6 +179,7 @@ const SettingsPage = () => {
               value={merchantData?.businessName}
               isDisabled={true}
               handleChange={() => {}}
+              isLoading={isLoading}
             />
             <LabelInput
               label="Business Description"
@@ -174,6 +187,7 @@ const SettingsPage = () => {
               isDisabled={!editEnabled}
               valueClassName="max-w-[300px]"
               handleChange={setBusinessDescription}
+              isLoading={isLoading}
             />
             {editEnabled ? (
               <div className="flex flex-col gap-4">
@@ -259,23 +273,29 @@ const SettingsPage = () => {
             ) : (
               <LabelInput
                 label="Business Address"
-                value={merchantData?.businessAddress.description}
+                value={merchantData?.businessAddress?.description}
                 isDisabled={true}
                 handleChange={() => {}}
+                isLoading={isLoading}
               />
             )}
           </Card>
         </div>
         <Card className="p-4 w-full flex justify-center items-center md:basis-[50%]">
           <CardContent className="w-full flex justify-center items-center pt-[unset]">
-            {editEnabled ? (
+            {isLoading ? (
+              <div className="flex justify-center items-center">
+                <Loader2 className="animate-spin" />
+              </div>
+            ) : editEnabled ? (
               <UploadProductImage
                 handleProductImageUrl={handleProductImageUrl}
+                size="large"
               />
             ) : (
               <Image
-                src={merchantData?.imageUrl}
-                alt="product-image"
+                src={merchantData?.businessImageUrl}
+                alt="Business Image"
                 width={80}
                 height={80}
                 className="rounded-xl aspect-square object-cover w-full h-full"

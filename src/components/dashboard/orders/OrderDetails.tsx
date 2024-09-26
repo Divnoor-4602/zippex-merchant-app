@@ -243,22 +243,22 @@ export const OrderDetails = ({ currentOrder }: OrderDetailsProps) => {
                 Customer
               </div>
               <div className="text-sm font-normal">
-                {capitalizeFirstLetter(currentOrder.firstName)}{" "}
-                {capitalizeFirstLetter(currentOrder.lastName)}
+                {capitalizeFirstLetter(currentOrder?.firstName)}{" "}
+                {capitalizeFirstLetter(currentOrder?.lastName)}
               </div>
             </div>
             <div className="flex justify-between ">
               <div className="font-normal text-sm text-muted-foreground">
                 Email
               </div>
-              <div className="text-sm font-normal">{currentOrder.email}</div>
+              <div className="text-sm font-normal">{currentOrder?.email}</div>
             </div>
             <div className="flex justify-between ">
               <div className="font-normal text-sm text-muted-foreground">
                 Phone
               </div>
               <div className="text-sm font-normal">
-                {currentOrder.phoneNumber}
+                {currentOrder?.phoneNumber}
               </div>
             </div>
           </div>

@@ -36,7 +36,7 @@ export default function DashboardCard({
   Icon,
 }: DashboardCardProps) {
   return (
-    <Card className="">
+    <Card className="w-full max-md:col-span-3 col-span-1">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
         <Icon />

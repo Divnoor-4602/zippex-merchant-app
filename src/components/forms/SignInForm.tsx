@@ -71,6 +71,12 @@ const SignInForm = () => {
       const merchantSnap = await getDoc(merchantRef);
 
       const merchantData = merchantSnap.data();
+      //!Uncomment this
+      // if (!response.user.emailVerified) {
+      //   toast.warning("Please verify your email to sign in!");
+      //   router.push("/verify-email");
+      //   return;
+      // }
 
       if (merchantData?.isOnBoarded) {
         toast.success("Sign in successful! Redirecting to dashboard");

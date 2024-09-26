@@ -9,13 +9,6 @@ import {
   LabelList,
 } from "recharts";
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -28,32 +21,39 @@ import {
   ArrowUpIcon,
   ChartColumnDecreasing,
   Filter,
+  Loader2,
   Search,
   X,
 } from "lucide-react";
-import { Card } from "../ui/card";
-import { motion } from "framer-motion";
-import { UpdateIcon } from "@radix-ui/react-icons";
-import DashboardCard from "../cards/DashboardCard";
-import { Badge } from "../ui/badge";
 import AnalyticsCard from "../cards/AnalyticsCard";
 
 // Imports end here
 
-const testData = [
-  { name: "Item 1", quantity: 10 },
-  { name: "Item 2", quantity: 20 },
-  { name: "Item 3", quantity: 30 },
-  { name: "Item 4", quantity: 40 },
-  { name: "Item 5", quantity: 50 },
-  { name: "Item 6", quantity: 60 },
-  { name: "Item 7", quantity: 70 },
-  { name: "Item 8", quantity: 80 },
-  { name: "Item 9", quantity: 90 },
-  { name: "Item 10", quantity: 100 },
-];
+const CustomLabel = (props: any) => {
+  const { x, y, width, value } = props;
+  let xIncrement = 0;
+  if (width < 30) xIncrement = 30;
+  return (
+    <text
+      x={x + xIncrement + width / 2}
+      y={y + 50} // Adjust the value to place the label below the bar
+      fill="#000"
+      textAnchor="middle"
+      dominantBaseline="middle"
+      style={{ fontSize: 12 }} // Adjust font size if needed
+    >
+      {value}
+    </text>
+  );
+};
 
-const InventoryAnalytics = ({ inventory }: { inventory: Inventory[] }) => {
+const InventoryAnalytics = ({
+  inventory,
+  isLoading,
+}: {
+  inventory: Inventory[] | undefined;
+  isLoading: boolean;
+}) => {
   const [activeInventory, setActiveInventory] = useState<null | Inventory[]>(
     null
   );
@@ -104,7 +104,7 @@ const InventoryAnalytics = ({ inventory }: { inventory: Inventory[] }) => {
             quantity: item.quantity,
           });
       });
-      bufferedArray.sort((a, b) => b.quantity - a.quantity);
+      bufferedArray.sort((a, b) => a.quantity - b.quantity);
       return bufferedArray;
     });
 
@@ -140,7 +140,7 @@ const InventoryAnalytics = ({ inventory }: { inventory: Inventory[] }) => {
       return;
     }
     setActiveInventory(() =>
-      inventory?.filter((item) =>
+      inventory!.filter((item) =>
         item.name.toLowerCase().includes(search.toLowerCase())
       )
     );
@@ -158,6 +158,7 @@ const InventoryAnalytics = ({ inventory }: { inventory: Inventory[] }) => {
       <div className="flex gap-5 w-full max-lg:flex-col">
         {/* Top Selling Items */}
         <AnalyticsCard
+          isLoading={isLoading}
           Icon={ArrowUpIcon}
           badgeVariant="brandPositive"
           data={quantitySold}
@@ -171,6 +172,7 @@ const InventoryAnalytics = ({ inventory }: { inventory: Inventory[] }) => {
 
         {/* Least Selling Items */}
         <AnalyticsCard
+          isLoading={isLoading}
           Icon={ArrowDownIcon}
           badgeVariant="brandNegative"
           data={quantitySold.toReversed()}
@@ -185,6 +187,7 @@ const InventoryAnalytics = ({ inventory }: { inventory: Inventory[] }) => {
       <div className="w-full flex gap-5 max-lg:flex-col">
         {/* Items Low on Stock */}
         <AnalyticsCard
+          isLoading={isLoading}
           Icon={ChartColumnDecreasing}
           badgeVariant={
             restockList.length === 0 ? "brandPositive" : "brandNegative"
@@ -199,7 +202,10 @@ const InventoryAnalytics = ({ inventory }: { inventory: Inventory[] }) => {
         />
         {/* Items Out of stock */}
         <AnalyticsCard
+          isLoading={isLoading}
           Icon={X}
+          labelListColor="black"
+          labelListPosition="insideRight"
           badgeVariant={
             outOfStockList.length === 0 ? "brandPositive" : "brandNegative"
           }
@@ -277,7 +283,11 @@ const InventoryAnalytics = ({ inventory }: { inventory: Inventory[] }) => {
           </button>
         </div>
         <div className="w-full">
-          {activeInventory?.length === 0 ? (
+          {isLoading ? (
+            <div className="w-full h-full flex justify-center items-center min-h-24">
+              <Loader2 className="animate-spin" size={20} />
+            </div>
+          ) : activeInventory?.length === 0 ? (
             <div className="w-full h-full flex justify-center items-center min-h-24">
               No Items Found
             </div>
@@ -296,9 +306,8 @@ const InventoryAnalytics = ({ inventory }: { inventory: Inventory[] }) => {
                 barCategoryGap={0}
               >
                 <Bar dataKey="quantity" fill="hsl(var(--chart-1))" radius={5}>
-                  <LabelList dataKey="name" position="insideLeft" fill="#fff" />
+                  <LabelList dataKey="name" content={CustomLabel} />
                   <LabelList dataKey={"quantity"} position="right" fill="" />
-                  {/* {//!Implement tooltip} */}
                 </Bar>
                 <YAxis dataKey={"name"} type="category" width={100} hide />
                 <XAxis dataKey="quantity" type="number" />

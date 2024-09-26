@@ -10,13 +10,21 @@ import {
   subWeeks,
 } from "date-fns";
 import { twMerge } from "tailwind-merge";
+import {
+  ApplicationVerifier,
+  signInWithPhoneNumber,
+  multiFactor,
+  User,
+  PhoneAuthProvider,
+} from "firebase/auth";
+import { auth } from "./firebase";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
 export function capitalizeFirstLetter(word: string) {
-  return word.charAt(0).toUpperCase() + word.slice(1);
+  return word?.charAt(0).toUpperCase() + word?.slice(1);
 }
 
 export function getPreviousWeekRange() {
@@ -94,3 +102,26 @@ export function getDayName(dayNumber: number) {
   ];
   return days[dayNumber];
 }
+
+export const verifyPhoneNumber = async (
+  user: User,
+  phoneNumber: string,
+  recaptchaVerifier: ApplicationVerifier
+): Promise<false | string> => {
+  const session = await multiFactor(user).getSession();
+  const phoneInfoOptions = {
+    phoneNumber,
+    session,
+  };
+
+  const phoneAuthProvider = new PhoneAuthProvider(auth);
+  try {
+    return await phoneAuthProvider.verifyPhoneNumber(
+      phoneInfoOptions,
+      recaptchaVerifier
+    );
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+};
