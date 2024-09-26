@@ -41,6 +41,7 @@ export async function getMonthlyRevenue(params: GetMonthlyRevenueProps) {
     for (const order of orders) {
       // convert the unix timestamp to a date
       const date = fromUnixTime(order.createdAt.seconds);
+
       const orderMonth = format(date, "MMMM-yyyy");
 
       if (orderMonth in monthlyRevenue) {

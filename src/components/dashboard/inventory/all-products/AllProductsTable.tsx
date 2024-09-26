@@ -40,6 +40,7 @@ import {
   TooltipContent,
 } from "../../../ui/tooltip";
 import { useRouter } from "next/navigation";
+import { Input } from "@/components/ui/input";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -53,7 +54,12 @@ export function AllProductsTable<TData, TValue>({
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
-  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [sorting, setSorting] = React.useState<SortingState>([
+    {
+      id: "createdAt",
+      desc: true,
+    },
+  ]);
 
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
@@ -117,6 +123,15 @@ export function AllProductsTable<TData, TValue>({
     <>
       {/* menu bar */}
       <div className="flex mb-4 gap-2">
+        <Input
+          placeholder="Product name"
+          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+          onChange={(event) =>
+            table.getColumn("name")?.setFilterValue(event.target.value)
+          }
+          className="max-w-[250px] h-[30px] no-focus"
+        />
+
         {/* add a new product */}
         <Button
           className="ml-auto h-[30px] text-xs font-normal bg-brandblue hover:bg-brandblue/80"

@@ -1,11 +1,11 @@
 "use client";
 
 import { auth, db } from "@/lib/firebase";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, query } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { AllProductsTable } from "@/components/dashboard/inventory/all-products/AllProductsTable";
 import { allProductsColumns } from "@/components/dashboard/ColumnDef";
-
+import { useRouter } from "next/navigation";
 import {
   Card,
   CardHeader,
@@ -13,31 +13,85 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/card";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { deleteProduct, getInventory } from "@/lib/actions/product.actions";
+import { toast } from "sonner";
+import { ChevronLeft, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const Page = () => {
   const [allProducts, setAllProducts] = useState<any>([]);
 
-  const handleSetProducts = (productId: string) => {
-    // redirect to the product details page
-    const filteredProducts = allProducts.filter(
-      (product: any) => product.id == productId
-    );
-    setAllProducts((prev: any) => [...filteredProducts]);
-  };
+  const router = useRouter();
 
-  useEffect(() => {
-    (async () => {
-      // fetch the whole inventory
-      const user = auth.currentUser;
+  const queryClient = useQueryClient();
 
-      // get the merchant
-      const merchnatRef = collection(db, "merchants", user!.uid, "inventory");
-      const merchantSnap = await getDocs(merchnatRef);
+  const merchantId = auth.currentUser!.uid;
 
-      // Loop through the documents and log the data after calculating the total sales using the orders
-      const totalInventory: any = [];
-      merchantSnap.forEach((doc) => {
-        totalInventory.push({ id: doc.id, ...doc.data() });
+  // mutation to handle deleting a product from the inventory
+  const {
+    data,
+    mutate: server_deleteProduct,
+    isPending,
+  } = useMutation({
+    mutationFn: (productId: string) => deleteProduct({ merchantId, productId }),
+    onMutate: async (productId: string) => {
+      // cancel any ongoing queries
+      await queryClient.cancelQueries({ queryKey: ["inventory"] });
+
+      // get the previous data
+      const previousData: any = queryClient.getQueryData(["inventory"]);
+
+      // setting new query data
+      queryClient.setQueryData(["inventory"], () => {
+        const newData = [...previousData];
+        // use filter to remove the currently deleted product to show optimistic updates
+
+        // return new data
+        const newDataToReturn = newData.filter((product: any) => {
+          return product.id !== productId;
+        });
+
+        return newDataToReturn;
+      });
+
+      // otherwise return the previous data
+      return previousData;
+    },
+    onSuccess: (data) => {
+      // update the cached data
+      toast.success("Product deleted successfully", {
+        icon: <Trash2 className="size-4" />,
+      });
+    },
+    onError: (error, variables, context) => {
+      queryClient.setQueryData(["cart"], () => context?.previousData);
+      toast.error(
+        "An error occurred while deleting the product, please try again later."
+      );
+    },
+    onSettled: () => {
+      queryClient.refetchQueries(
+        {
+          queryKey: ["inventory"],
+          type: "all",
+        },
+        {
+          throwOnError: true,
+        }
+      );
+    },
+  });
+
+  const {
+    data: totalInventory,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["inventory"],
+    queryFn: async () => {
+      const totalInventory = await getInventory({
+        merchantId,
       });
 
       setAllProducts((prev: any) =>
@@ -51,42 +105,50 @@ const Page = () => {
             fragility: item.fragility,
             image: item.imageUrl,
             createdAt: item.createdAt.seconds,
-            merchantId: user!.uid,
-            onDeleteProduct: () => handleSetProducts(item.id),
+            merchantId: merchantId,
+            onDeleteProduct: () => server_deleteProduct(item.id),
           };
         })
       );
 
-      //   setAllProducts((prev: any) => totalInventory.map((item: any) => {
-      //       return {
-      //         id: item.id,
-      //         image: item.imageUrl,
-      //         name: item.name,
-      //         fragility: item.fragility,
-      //         stock: item.quantity,
-      //         price: item.price,
-      //         totalOrders: item.totalOrders,
-      //         createdAt: item.createdAt.seconds,
-      //       };
-      //     );
-      //   });
-    })();
-  }, []);
+      return totalInventory;
+    },
+    refetchInterval: 5000,
+  });
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <>
-      <Card className="col-span-2 overflow-x-hidden">
-        <CardHeader className="px-7">
-          <CardTitle>Inventory Details</CardTitle>
-          <CardDescription>
-            Click on any product to view details.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {/* Data Table */}
-          {<AllProductsTable columns={allProductsColumns} data={allProducts} />}
-        </CardContent>
-      </Card>
+      <main className="grid grid-cols-1 gap-4">
+        <Button
+          className=""
+          size={"icon"}
+          variant={"outline"}
+          onClick={() => router.back()}
+        >
+          <ChevronLeft className="size-4" />
+        </Button>
+        <Card className="">
+          <CardHeader className="px-7 flex flex-col">
+            <CardTitle>Inventory Details</CardTitle>
+            <CardDescription>
+              Click on any product to view details.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="">
+            {/* Data Table */}
+            {
+              <AllProductsTable
+                columns={allProductsColumns}
+                data={allProducts}
+              />
+            }
+          </CardContent>
+        </Card>
+      </main>
     </>
   );
 };

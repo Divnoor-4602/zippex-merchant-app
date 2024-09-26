@@ -36,6 +36,8 @@ import {
   TooltipContent,
 } from "../ui/tooltip";
 import { Info } from "lucide-react";
+import { editProduct } from "@/lib/actions/product.actions";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "This field has to be filled" }),
@@ -45,7 +47,7 @@ const formSchema = z.object({
     .int()
     .positive()
     .min(1, { message: "Quantity must be at least 1" }),
-  price: z.coerce.number().int().positive(),
+  price: z.coerce.number().positive(),
   fragility: z.coerce
     .number()
     .int()
@@ -57,15 +59,13 @@ const formSchema = z.object({
 
 interface EditProductFormProps {
   product: any;
-  handleProductDetails?: (data: any) => void;
 }
 
-const EditProductForm = ({
-  product,
-  handleProductDetails,
-}: EditProductFormProps) => {
+const EditProductForm = ({ product }: EditProductFormProps) => {
   // const image firebase url on product image upload
   const [productImageUrl, setProductImageUrl] = useState<any>(null);
+
+  const queryClient = useQueryClient();
 
   const router = useRouter();
 
@@ -93,18 +93,73 @@ const EditProductForm = ({
     });
   }, [product]);
 
+  // edit the product using form mutations
+  const { mutate: server_editProduct } = useMutation({
+    mutationFn: ({
+      values,
+      merchantId,
+      imageUrl,
+    }: {
+      values: z.infer<typeof formSchema>;
+      merchantId: string;
+      imageUrl: string;
+    }) =>
+      editProduct({
+        ...values,
+        productId: product.productId,
+        merchantId,
+        imageUrl,
+      }),
+    onMutate: async ({ values, merchantId, imageUrl }) => {
+      // cancel any ongoing queries
+      await queryClient.cancelQueries({
+        queryKey: ["product", product.productId],
+      });
+
+      // get the previous data
+      const previousData: any = queryClient.getQueryData([
+        "product",
+        product.productId,
+      ]);
+
+      // setting new query data
+      queryClient.setQueryData(["product", product.productId], () => {
+        return {
+          ...previousData,
+          ...values,
+          imageUrl,
+        };
+      });
+
+      return previousData;
+    },
+    onSuccess: (data) => {
+      toast.success("Product updated successfully");
+    },
+    onError: (error) => {
+      console.log(error.message);
+      toast.error("An error occurred while updating the product");
+    },
+
+    onSettled: () => {
+      queryClient.refetchQueries(
+        {
+          queryKey: ["product", product.productId],
+          type: "all",
+        },
+        {
+          throwOnError: true,
+        }
+      );
+    },
+  });
+
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       const merchant = auth.currentUser;
       const merchantId = merchant!.uid;
 
-      console.log("current uploaded image", productImageUrl);
-
-      console.log("Already uploaded image", product.imageUrl);
-
       if (productImageUrl) {
-        // upload the image to firebase storage then update the doc
-        // reference to storage
         const storageRef = ref(
           storage,
           `productImages/${productImageUrl.name}`
@@ -114,76 +169,12 @@ const EditProductForm = ({
         const snapshot = await uploadBytes(storageRef, productImageUrl);
         const url = await getDownloadURL(snapshot.ref);
 
-        const productRef = doc(
-          db,
-          "merchants",
-          merchantId,
-          "inventory",
-          product.productId
-        );
-
-        await updateDoc(productRef, {
-          name: values.name,
-          description: values.description,
-          quantity: values.quantity,
-          category: values.category,
-          fragility: values.fragility,
-          price: values.price,
-          imageUrl: url,
-        });
-
-        // handle product details to show updates
-        if (handleProductDetails) {
-          handleProductDetails({
-            ...product,
-            name: values.name,
-            description: values.description,
-            quantity: values.quantity,
-            category: values.category,
-            fragility: values.fragility,
-            price: values.price,
-            imageUrl: url,
-          });
-        }
+        server_editProduct({ values, merchantId, imageUrl: url });
       } else {
-        const productRef = doc(
-          db,
-          "merchants",
-          merchantId,
-          "inventory",
-          product.productId
-        );
-
-        await updateDoc(productRef, {
-          name: values.name,
-          description: values.description,
-          quantity: values.quantity,
-          category: values.category,
-          fragility: values.fragility,
-          price: values.price,
-          imageUrl: product.imageUrl,
-        });
-
-        // handle product details to show updates
-        if (handleProductDetails) {
-          handleProductDetails({
-            ...product,
-            name: values.name,
-            description: values.description,
-            quantity: values.quantity,
-            category: values.category,
-            fragility: values.fragility,
-            price: values.price,
-            imageUrl: product.imageUrl,
-          });
-        }
+        server_editProduct({ values, merchantId, imageUrl: product.imageUrl });
       }
 
-      toast.success("Product updated successfully");
-
       form.reset();
-
-      router.refresh();
     } catch (error) {
       console.log(error);
       toast.error("An error occurred while updating the product");

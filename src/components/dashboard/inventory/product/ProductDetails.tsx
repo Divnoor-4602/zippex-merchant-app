@@ -11,7 +11,7 @@ import {
 import { auth, db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { ChevronLeft } from "lucide-react";
-
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
@@ -19,55 +19,55 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import Image from "next/image";
+
 import EditProductForm from "@/components/forms/EditProductForm";
+import { getProduct } from "@/lib/actions/product.actions";
+import { useQuery } from "@tanstack/react-query";
+import router from "next/router";
 
 const ProductDetails = () => {
   const router = useRouter();
   const params = useParams();
   const productId = params.productId as string;
 
-  const [productDetails, setProductDetails] = useState<any>({});
+  // fetch the product details
 
-  const handleProductDetails = (data: any) => {
-    console.log("new deets", data);
-    setProductDetails((prev: any) => data);
-  };
+  const merchantId = auth.currentUser!.uid;
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const merchant = auth.currentUser;
-        const merchantId = merchant!.uid;
+  interface ProductDetails {
+    id: string;
+    name: string;
+    description: string;
+    category: string;
+    quantity: number;
+    price: number;
+    fragility: string;
+    imageUrl: string;
+    totalOrders: number;
+  }
 
-        const productRef = doc(
-          db,
-          "merchants",
-          merchantId,
-          "inventory",
-          productId
-        );
+  const {
+    data: productDetails,
+    isError,
+    isLoading,
+    error,
+  } = useQuery<ProductDetails>({
+    queryKey: ["product", productId],
+    queryFn: () => getProduct({ merchantId, productId }),
+  });
 
-        const productSnap = await getDoc(productRef);
-
-        if (productSnap.exists()) {
-          console.log(productSnap.data());
-          setProductDetails((prev: any) => productSnap.data());
-        } else {
-          toast.error("Product not found");
-        }
-      } catch (error) {
-        toast.error("An error occurred while fetching the product");
-        console.log(error);
-      }
-    })();
-  }, []);
-
-  //   render loading state
-  if (!productDetails) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
         <p>Loading...</p>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <p>{error.message}</p>
       </div>
     );
   }
@@ -84,7 +84,7 @@ const ProductDetails = () => {
           >
             <ChevronLeft className="size-4" />
           </Button>
-          <h1 className="text-xl font-semibold">{productDetails.name}</h1>
+          <h1 className="text-xl font-semibold">{productDetails!.name}</h1>
           {/* product id badge */}
           <Badge
             variant={"outline"}
@@ -93,14 +93,11 @@ const ProductDetails = () => {
             {productId}
           </Badge>
         </div>
-        <EditProductForm
-          product={{ ...productDetails, productId }}
-          handleProductDetails={handleProductDetails}
-        />
+        <EditProductForm product={{ ...productDetails, productId }} />
       </div>
       <section className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-4">
         <Card className="col-span-2">
-          <CardHeader>
+          <CardHeader className="flex flex-col">
             <CardTitle>Product Details</CardTitle>
             <CardDescription>
               Product specifications and details.
@@ -114,7 +111,7 @@ const ProductDetails = () => {
                 <Input
                   className="no-focus"
                   disabled
-                  value={productDetails.name}
+                  value={productDetails?.name}
                 />
               </div>
               {/* description */}
@@ -123,7 +120,7 @@ const ProductDetails = () => {
                 <Input
                   className="no-focus"
                   disabled
-                  value={productDetails.description}
+                  value={productDetails?.description}
                 />
               </div>
               {/* category */}
@@ -132,7 +129,7 @@ const ProductDetails = () => {
                 <Input
                   className="no-focus"
                   disabled
-                  value={productDetails.category}
+                  value={productDetails?.category}
                 />
               </div>
             </div>
@@ -140,7 +137,7 @@ const ProductDetails = () => {
         </Card>
         {/* quantity, price, fragility */}
         <Card className="sm:row-start-2 col-span-2">
-          <CardHeader>
+          <CardHeader className="flex flex-col">
             <CardTitle>Stock</CardTitle>
             <CardDescription>
               Quantity, price and fragility of the product.
@@ -154,7 +151,7 @@ const ProductDetails = () => {
                 <Input
                   className="no-focus"
                   disabled
-                  value={productDetails.quantity}
+                  value={productDetails?.quantity}
                 />
               </div>
               {/* price */}
@@ -163,7 +160,7 @@ const ProductDetails = () => {
                 <Input
                   className="no-focus"
                   disabled
-                  value={productDetails.price}
+                  value={productDetails?.price}
                 />
               </div>
               {/* fragility */}
@@ -172,7 +169,7 @@ const ProductDetails = () => {
                 <Input
                   className="no-focus"
                   disabled
-                  value={productDetails.fragility}
+                  value={productDetails?.fragility}
                 />
               </div>
             </div>
@@ -181,13 +178,13 @@ const ProductDetails = () => {
         {/* product images */}
         {/* get the product image and pass it to the form to add to the product details */}
         <Card className="max-sm:col-span-2">
-          <CardHeader>
+          <CardHeader className="flex flex-col">
             <CardTitle>Product Image</CardTitle>
             <CardDescription>Image of the product</CardDescription>
           </CardHeader>
           <CardContent className="flex w-full justify-center items-center">
             <Image
-              src={productDetails.imageUrl}
+              src={productDetails!.imageUrl}
               alt={"product details product-image"}
               width={250}
               height={250}
@@ -197,7 +194,7 @@ const ProductDetails = () => {
         </Card>
         {/* Total orders of the project */}
         <Card className="max-sm:col-span-2">
-          <CardHeader>
+          <CardHeader className="flex flex-col">
             <CardTitle>Total Orders</CardTitle>
             <CardDescription>
               Number of times the product has been ordered.
@@ -205,7 +202,7 @@ const ProductDetails = () => {
           </CardHeader>
           <CardContent>
             <h1 className="text-4xl font-semibold">
-              {productDetails.totalOrders}
+              {productDetails?.totalOrders}
             </h1>
           </CardContent>
         </Card>

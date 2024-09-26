@@ -185,7 +185,7 @@ export const OrderDetails = ({ currentOrder }: OrderDetailsProps) => {
           </Tooltip>
         </TooltipProvider>
 
-        <CardHeader className="bg-muted/50 flex justify-between">
+        <CardHeader className="bg-muted/50 flex flex-col">
           <CardTitle className="group flex items-center gap-2 text-sm ">
             Order {currentOrder.id}
           </CardTitle>
@@ -243,24 +243,22 @@ export const OrderDetails = ({ currentOrder }: OrderDetailsProps) => {
                 Customer
               </div>
               <div className="text-sm font-normal">
-                {capitalizeFirstLetter(currentOrder.customer.firstName)}{" "}
-                {capitalizeFirstLetter(currentOrder.customer.lastName)}
+                {capitalizeFirstLetter(currentOrder.firstName)}{" "}
+                {capitalizeFirstLetter(currentOrder.lastName)}
               </div>
             </div>
             <div className="flex justify-between ">
               <div className="font-normal text-sm text-muted-foreground">
                 Email
               </div>
-              <div className="text-sm font-normal">
-                {currentOrder.customer.email}
-              </div>
+              <div className="text-sm font-normal">{currentOrder.email}</div>
             </div>
             <div className="flex justify-between ">
               <div className="font-normal text-sm text-muted-foreground">
                 Phone
               </div>
               <div className="text-sm font-normal">
-                {currentOrder.customer.phoneNumber}
+                {currentOrder.phoneNumber}
               </div>
             </div>
           </div>

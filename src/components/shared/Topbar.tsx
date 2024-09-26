@@ -11,6 +11,8 @@ import { usePathname, useRouter } from "next/navigation";
 
 import React from "react";
 import { capitalizeFirstLetter } from "@/lib/utils";
+import { Badge } from "../ui/badge";
+import PendingRequests from "./PendingRequests";
 
 const Topbar = () => {
   const router = useRouter();
@@ -21,7 +23,7 @@ const Topbar = () => {
 
   return (
     <>
-      <div className="mt-6 mx-6 md:mx-12  flex items-center justify-between">
+      <div className="mt-6 mx-6 md:mx-12  flex flex-col-reverse md:flex-row md:items-center justify-between gap-4">
         <Breadcrumb className="">
           <BreadcrumbList>
             {pathList?.map((path, index) => {
@@ -39,7 +41,11 @@ const Topbar = () => {
             })}
           </BreadcrumbList>
         </Breadcrumb>
-        <ProfileDropdown />
+        <div className="flex items-center gap-4 self-end">
+          {/* in review -> pending on accepting the orders */}
+          <PendingRequests />
+          <ProfileDropdown />
+        </div>
       </div>
     </>
   );

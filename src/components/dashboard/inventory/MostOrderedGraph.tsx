@@ -11,15 +11,6 @@ import {
 
 export const description = "A linear area chart";
 
-const chartData = [
-  { month: "January", numOrdered: 186 },
-  { month: "February", numOrdered: 305 },
-  { month: "March", numOrdered: 237 },
-  { month: "April", numOrdered: 73 },
-  { month: "May", numOrdered: 209 },
-  { month: "June", numOrdered: 214 },
-];
-
 const chartConfig = {
   numOrdered: {
     label: "Orders",
@@ -27,7 +18,11 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function MostOrderedGraph() {
+export function MostOrderedGraph({
+  chartData,
+}: {
+  chartData: { month: string; numOrdered: number }[];
+}) {
   return (
     <ChartContainer config={chartConfig} className="">
       <AreaChart

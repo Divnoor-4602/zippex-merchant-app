@@ -9,6 +9,7 @@ import {
   EllipsisIcon,
   PencilIcon,
   ShieldIcon,
+  TicketCheckIcon,
   TicketX,
   Trash2Icon,
   Truck,
@@ -23,8 +24,11 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { deleteProduct, editProduct } from "@/lib/actions/product.actions";
-import { log } from "console";
+import {
+  deleteProduct,
+  redirectEditProduct,
+} from "@/lib/actions/product.actions";
+
 import { toggleValidationDiscount } from "@/lib/actions/discount.actions";
 
 export const columns: ColumnDef<any>[] = [
@@ -88,11 +92,32 @@ export const columns: ColumnDef<any>[] = [
             <span>{status}</span>
           </span>
         );
-      } else {
+      } else if (status.toLowerCase() === "arrivedD") {
+        return (
+          <span className="flex items-center gap-1">
+            <div className="rounded-full bg-purple-600 size-3 animate-pulse" />
+            <span>reached</span>
+          </span>
+        );
+      } else if (status.toLowerCase() === "rejected") {
         return (
           <span className="flex items-center gap-1">
             <div className="rounded-full bg-red-600 size-3 animate-pulse" />
-            <span>reached</span>
+            <span>{status}</span>
+          </span>
+        );
+      } else if (status.toLowerCase() === "cancelled") {
+        return (
+          <span className="flex items-center gap-1">
+            <div className="rounded-full bg-red-600 size-3 animate-pulse" />
+            <span>{status}</span>
+          </span>
+        );
+      } else if (status.toLowerCase() === "inReview") {
+        return (
+          <span className="flex items-center gap-1">
+            <div className="rounded-full bg-amber-600 size-3 animate-pulse" />
+            <span>In Review</span>
           </span>
         );
       }
@@ -345,7 +370,10 @@ export const allProductsColumns: ColumnDef<any>[] = [
           <DropdownMenuContent>
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
-              onClick={() => editProduct({ productId: data.id })}
+              onClick={(event) => {
+                event.stopPropagation();
+                redirectEditProduct({ productId: data.id });
+              }}
             >
               <span className="flex items-center gap-1">
                 <PencilIcon className="size-4" />
@@ -353,12 +381,9 @@ export const allProductsColumns: ColumnDef<any>[] = [
               </span>
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() => {
+              onClick={(event) => {
+                event.stopPropagation();
                 data.onDeleteProduct();
-                deleteProduct({
-                  merchantId: data.merchantId,
-                  productId: data.id,
-                });
               }}
             >
               <span className="flex items-center gap-1">
@@ -530,8 +555,6 @@ export const allDiscountsColumns: ColumnDef<any>[] = [
     cell: (row: any) => {
       const isDiscountValid = row.getValue("isDiscountValid") as string;
 
-      console.log(isDiscountValid);
-
       if (isDiscountValid === "true") {
         return (
           <>
@@ -637,17 +660,20 @@ export const allDiscountsColumns: ColumnDef<any>[] = [
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
               onClick={() => {
-                toggleValidationDiscount({
-                  discountId: data.id,
-                  currentValidity: data.isDiscountValid,
-                  merchantId: data.merchantId,
-                });
+                data.onToggle();
               }}
             >
-              <span className="flex items-center gap-1">
-                <TicketX className="size-4" />
-                <span>Invalidate</span>
-              </span>
+              {data.isDiscountValid === "true" ? (
+                <span className="flex items-center gap-1">
+                  <TicketX className="size-4" />
+                  <span>Invalidate</span>
+                </span>
+              ) : (
+                <span className="flex items-center gap-1">
+                  <TicketCheckIcon className="size-4" />
+                  <span>Validate</span>
+                </span>
+              )}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

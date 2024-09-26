@@ -86,11 +86,32 @@ export const columns: ColumnDef<any>[] = [
             <span>{status}</span>
           </span>
         );
-      } else {
+      } else if (status.toLowerCase() === "arrivedD") {
+        return (
+          <span className="flex items-center gap-1">
+            <div className="rounded-full bg-purple-600 size-3 animate-pulse" />
+            <span>reached</span>
+          </span>
+        );
+      } else if (status.toLowerCase() === "rejected") {
         return (
           <span className="flex items-center gap-1">
             <div className="rounded-full bg-red-600 size-3 animate-pulse" />
-            <span>reached</span>
+            <span>{status}</span>
+          </span>
+        );
+      } else if (status.toLowerCase() === "cancelled") {
+        return (
+          <span className="flex items-center gap-1">
+            <div className="rounded-full bg-red-600 size-3 animate-pulse" />
+            <span>{status}</span>
+          </span>
+        );
+      } else if (status.toLowerCase() === "inreview") {
+        return (
+          <span className="flex items-center gap-1">
+            <div className="rounded-full bg-amber-600 size-3 animate-pulse" />
+            <span>In Review</span>
           </span>
         );
       }
@@ -120,26 +141,30 @@ export const columns: ColumnDef<any>[] = [
 ];
 
 const TotalOrders = ({ recurrence, className, orders }: TotalOrdersProps) => {
-  const formattedOrders = orders.map((order: any) => {
-    return {
-      customer: `${capitalizeFirstLetter(
-        order.customer.firstName
-      )} ${capitalizeFirstLetter(order.customer.lastName)} ${order.id}`,
+  const formattedOrders = orders
+    .map((order: any) => {
+      return {
+        customer: `${capitalizeFirstLetter(
+          order.firstName
+        )} ${capitalizeFirstLetter(order.lastName)} ${order.id}`,
 
-      type: order.orderType,
+        type: order.orderType,
 
-      date: format(order.createdAt.seconds * 1000, "MM-dd-yyyy"),
+        date: format(order.createdAt.seconds * 1000, "MM-dd-yyyy"),
 
-      status: order.orderStatus,
+        status: order.orderStatus,
 
-      amount: order.price,
-    };
-  });
+        amount: order.subtotal || 0,
+      };
+    })
+    .sort((a: any, b: any) => {
+      return new Date(b.date).getTime() - new Date(a.date).getTime();
+    });
 
   return (
     <>
       <Card className={cn(className)}>
-        <CardHeader className="px-7">
+        <CardHeader className="px-7 flex flex-col">
           <CardTitle>Orders</CardTitle>
           <CardDescription>Recent orders from your store.</CardDescription>
         </CardHeader>
