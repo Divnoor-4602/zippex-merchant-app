@@ -8,6 +8,10 @@ export const AuthContext = createContext(
   {} as { user: User | null; setUser: (user: User | null) => void }
 );
 
+export const useAuth = () => {
+  return useContext(AuthContext);
+};
+
 export const AuthProvider = ({ children }: React.PropsWithChildren<{}>) => {
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState<boolean>(true);

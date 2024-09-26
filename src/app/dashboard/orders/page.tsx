@@ -49,115 +49,92 @@ import {
 } from "@/components/ui/dialog";
 
 import { Separator } from "../../../components/ui/separator";
+import { useQuery } from "@tanstack/react-query";
+import { getRecentOrders } from "@/lib/actions/order.actions";
+import useOrdersListener from "@/lib/hooks/useOrdersListener";
 
 const Page = () => {
   // search input zod schem
 
-  const [yearlyOrders, setYearlyOrders] = useState<any>([]);
-  const [weeklyOrders, setWeeklyOrders] = useState<any>([]);
-  const [dailyOrders, setDailyOrders] = useState<any>([]);
-  const [monthlyOrders, setMonthlyOrders] = useState<any>([]);
-
   const [currentOrder, setCurrentOrder] = useState<any>(null);
   const [searchText, setSearchText] = useState<string>("");
 
-  const { startWeek, endWeek } = getPreviousWeekRange();
-  const { startDay, endDay } = getDayRange();
-  const { startMonth, endMonth } = getMonthRange();
-
   const [open, setOpen] = useState<boolean>(false);
 
-  useEffect(() => {
-    (async () => {
-      const user = auth.currentUser;
+  const merchant = auth.currentUser;
+  const merchantId = merchant!.uid;
 
-      const orderRef = collection(db, "Orders");
+  console.log(merchantId);
 
-      const merchantQuery = query(
-        orderRef,
-        where("merchantId", "==", user!.uid),
-        orderBy("createdAt", "desc")
-      );
+  const {
+    data: allOrders,
+    isLoading: allOrdersLoading,
+    isError: allOrdersError,
+  } = useOrdersListener();
 
-      const querySnapshot = await getDocs(merchantQuery);
-
-      const orderDocs = querySnapshot.docs.map((doc, index) => {
-        const data = doc.data();
-        return { ...data, id: doc.id, userId: data.userId };
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["orders"],
+    queryFn: async () => {
+      const dailyOrders = await getRecentOrders({
+        merchantId: merchantId,
+        numMonths: 1 / 30,
       });
 
-      // get all the orders and add a customer property on the docs with all the customer details
-
-      let customOrders: any = [];
-
-      for (const docs of orderDocs) {
-        const userRef = doc(db, "Users", docs.id);
-        const user = await getDoc(userRef);
-        const userData = user.data();
-
-        const docToAdd = { ...docs, customer: userData };
-
-        customOrders.push(docToAdd);
-      }
-
-      // filtering orders according to year, week, day
-      const week = customOrders.filter((order: any) => {
-        const orderDate = new Date(order.createdAt.seconds * 1000); // Convert Firestore timestamp to JS Date
-
-        return orderDate >= startWeek && orderDate <= endWeek;
+      const weeklyOrders = await getRecentOrders({
+        merchantId: merchantId,
+        numMonths: 1 / 4,
       });
 
-      const year = customOrders.filter((order: any) => {
-        const orderDate = new Date(order.createdAt.seconds * 1000); // Convert Firestore timestamp to JS Date
-        return orderDate.getFullYear() === new Date().getFullYear();
+      const monthlyOrders = await getRecentOrders({
+        merchantId: merchantId,
+        numMonths: 1,
       });
 
-      const day = customOrders.filter((order: any) => {
-        const orderDate = new Date(order.createdAt.seconds * 1000); // Convert Firestore timestamp to JS Date
-        return orderDate >= startDay && orderDate <= endDay;
+      const yearlyOrders = await getRecentOrders({
+        merchantId: merchantId,
+        numMonths: 12,
       });
 
-      const month = customOrders.filter((order: any) => {
-        const orderDate = new Date(order.createdAt.seconds * 1000); // Convert Firestore timestamp to JS Date
-        return orderDate >= startMonth && orderDate <= endMonth;
-      });
+      setCurrentOrder((prev: any) => monthlyOrders[0]);
 
-      // setting yearly orders, weekly orders, daily orders
-      setYearlyOrders((prev: any) => year);
-      setWeeklyOrders((prev: any) => week);
-      setDailyOrders((prev: any) => day);
-      setMonthlyOrders((prev: any) => month);
+      return { dailyOrders, weeklyOrders, monthlyOrders, yearlyOrders };
+    },
+  });
 
-      console.log("monthlyOrders", month);
-      setCurrentOrder((prev: any) => month[0]);
-    })();
-  }, []);
-
-  if (!currentOrder) return <div>Loading...</div>;
+  if (isLoading || allOrdersLoading) {
+    return <div>Loading...</div>;
+  }
 
   // order status: Complete, Pending, Accepted, Arrived, arrived D, Cancelled
   let color;
 
-  if (currentOrder.orderStatus.toLowerCase() === "complete") {
+  if (currentOrder?.orderStatus.toLowerCase() === "complete") {
     color = "bg-green-600";
-  } else if (currentOrder.orderStatus.toLowerCase() === "pending") {
+  } else if (currentOrder?.orderStatus.toLowerCase() === "pending") {
     color = "bg-yellow-400";
-  } else if (currentOrder.orderStatus.toLowerCase() === "accepted") {
+  } else if (currentOrder?.orderStatus.toLowerCase() === "accepted") {
     color = "bg-blue-600";
-  } else if (currentOrder.orderStatus.toLowerCase() === "arrived") {
+  } else if (currentOrder?.orderStatus.toLowerCase() === "arrived") {
     color = "bg-gray-600";
-  } else if (currentOrder.orderStatus.toLowerCase() === "arrivedD") {
+  } else if (currentOrder?.orderStatus.toLowerCase() === "arrivedD") {
+    color = "bg-purple-600";
+  } else if (
+    currentOrder?.orderStatus.toLowerCase() === "cancelled" ||
+    "rejected"
+  ) {
     color = "bg-red-600";
+  } else if (currentOrder?.orderStatus.toLowerCase() === "inReview") {
+    color = "bg-amber-600";
   }
 
   // format orders for order history table
-  const orderHistoryOrders = monthlyOrders.map((order: any) => {
+  const orderHistoryOrders = data?.monthlyOrders.map((order: any) => {
     return {
-      customer: `${order.customer?.firstName} ${order.customer?.lastName} ${order.id}`,
+      customer: `${order?.firstName} ${order?.lastName} ${order.id}`,
       type: order.orderType,
       date: format(order.createdAt.seconds * 1000, "MM-dd-yyyy"),
       status: order.orderStatus,
-      amount: order.price,
+      amount: order.subtotal,
     };
   });
 
@@ -172,7 +149,7 @@ const Page = () => {
     const user = await getDoc(userRef);
     const userData = user.data();
 
-    const docToAdd = { ...orderData, customer: userData, id: order.id };
+    const docToAdd = { ...orderData, ...userData, id: order.id };
 
     setCurrentOrder((prev: any) => docToAdd);
   };
@@ -237,7 +214,7 @@ const Page = () => {
               <div className="mt-6">
                 <div className="flex justify-between items-center">
                   <div className="font-semibold text-sm">
-                    Order {currentOrder.id}
+                    Order {currentOrder?.id}
                   </div>
                   <div className="text-sm">
                     Date:{" "}
@@ -251,17 +228,18 @@ const Page = () => {
                 <div className="mt-6">
                   <div className="font-semibold text-sm">Order Details</div>
                   <ul className="mt-3">
-                    {currentOrder.basket.map((item: any, index: any) => (
-                      <li
-                        className="flex items-center justify-between font-light text-sm"
-                        key={item.name + item.id + index}
-                      >
-                        <span className="text-muted-foreground">
-                          {item.name} x {item.quantity}
-                        </span>
-                        <span>${item.price * item.quantity}</span>
-                      </li>
-                    ))}
+                    {currentOrder.basket &&
+                      currentOrder.basket.map((item: any, index: any) => (
+                        <li
+                          className="flex items-center justify-between font-light text-sm"
+                          key={item.name + item.id + index}
+                        >
+                          <span className="text-muted-foreground">
+                            {item.name} x {item.quantity}
+                          </span>
+                          <span>${item.price * item.quantity}</span>
+                        </li>
+                      ))}
                     <Separator className="my-6" />
                     <li className="flex items-center justify-between font-semibold">
                       <span className="text-muted-foreground text-sm font-medium">
@@ -297,8 +275,8 @@ const Page = () => {
                       Customer
                     </div>
                     <div className="text-sm font-normal">
-                      {capitalizeFirstLetter(currentOrder?.customer?.firstName)}{" "}
-                      {capitalizeFirstLetter(currentOrder?.customer?.lastName)}
+                      {capitalizeFirstLetter(currentOrder?.firstName)}{" "}
+                      {capitalizeFirstLetter(currentOrder?.lastName)}
                     </div>
                   </div>
                   <div className="flex justify-between">
@@ -306,7 +284,7 @@ const Page = () => {
                       Email
                     </div>
                     <div className="text-sm font-normal">
-                      {currentOrder?.customer?.email}
+                      {currentOrder?.email}
                     </div>
                   </div>
                   <div className="flex justify-between">
@@ -314,7 +292,7 @@ const Page = () => {
                       Phone
                     </div>
                     <div className="text-sm font-normal">
-                      {currentOrder?.customer?.phoneNumber}
+                      {currentOrder?.phoneNumber}
                     </div>
                   </div>
                 </div>
@@ -395,24 +373,24 @@ const Page = () => {
             <TotalOrders
               className=""
               recurrence="yearly"
-              orders={yearlyOrders}
+              orders={data?.yearlyOrders}
             />
           </TabsContent>
           <TabsContent value="month">
-            <TotalOrders recurrence="weekly" orders={monthlyOrders} />
+            <TotalOrders recurrence="weekly" orders={data?.monthlyOrders} />
           </TabsContent>
           <TabsContent value="week">
-            <TotalOrders recurrence="daily" orders={weeklyOrders} />
+            <TotalOrders recurrence="daily" orders={data?.weeklyOrders} />
           </TabsContent>
           <TabsContent value="day">
-            <TotalOrders recurrence="daily" orders={dailyOrders} />
+            <TotalOrders recurrence="daily" orders={data?.dailyOrders} />
           </TabsContent>
         </Tabs>
 
         {/* order history and order bill table */}
         <section className="lg:col-span-2 col-span-3">
-          <Card className=" overflow-x-hidden">
-            <CardHeader className="px-7">
+          <Card className=" overflow-x-hidden ">
+            <CardHeader className="px-7 flex flex-col">
               <CardTitle>Order History</CardTitle>
               <CardDescription>
                 Click on any order to view details.
@@ -432,7 +410,9 @@ const Page = () => {
         </section>
         {/* selected order details */}
         <section className="max-lg:col-span-3">
-          <OrderDetails currentOrder={currentOrder} />
+          {currentOrder.basket !== undefined && (
+            <OrderDetails currentOrder={currentOrder} />
+          )}
         </section>
       </main>
     </>

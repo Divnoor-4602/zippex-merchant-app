@@ -33,6 +33,7 @@ import { Button } from "../../ui/button";
 import { CirclePlus, SlidersHorizontal } from "lucide-react";
 import { DataTablePagination } from "../../shared/Pagination";
 import { useRouter } from "next/navigation";
+import { Input } from "@/components/ui/input";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -75,6 +76,16 @@ export function CustomerManagementTable<TData, TValue>({
       {/* menu bar */}
       <div className="flex mb-4 gap-2 flex-wrap">
         {/* filter columns */}
+        {/* search by customer name */}
+        <Input
+          placeholder="Customer name"
+          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+          onChange={(event) =>
+            table.getColumn("name")?.setFilterValue(event.target.value)
+          }
+          className="max-w-[250px] h-[30px] no-focus"
+        />
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button

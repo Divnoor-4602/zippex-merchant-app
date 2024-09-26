@@ -20,7 +20,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { ChevronLeft, Image, ImageIcon, Info } from "lucide-react";
+import { BadgeCheckIcon, ChevronLeft, ImageIcon, Info } from "lucide-react";
 import {
   Tooltip,
   TooltipProvider,
@@ -35,9 +35,8 @@ import { useRouter } from "next/navigation";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { auth, db, storage } from "@/lib/firebase";
 import { toast } from "sonner";
-import { addDoc, collection } from "firebase/firestore";
-import { add } from "date-fns";
-import { error } from "console";
+import { useMutation } from "@tanstack/react-query";
+import { addProduct } from "@/lib/actions/product.actions";
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "This field has to be filled" }),
@@ -80,52 +79,53 @@ const AddProductForm = () => {
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    try {
-      if (!productImageUrl) {
-        toast.error("Please upload a product image.", {
-          icon: <ImageIcon className="size-4" />,
-        });
-      } else {
-        // reference to storage
-        const storageRef = ref(
-          storage,
-          `productImages/${productImageUrl.name}`
-        );
-
-        // create an upload task for the selected Image
-        const snapshot = await uploadBytes(storageRef, productImageUrl);
-        const url = await getDownloadURL(snapshot.ref);
-
-        // create a product in the merchants inventory
-        const merchant = auth.currentUser;
-        const merchantRef = collection(
-          db,
-          "merchants",
-          merchant!.uid,
-          "inventory"
-        );
-
-        // data to put in the product inventory
-        const productData = {
-          ...values,
-          totalOrders: 0,
-          createdAt: new Date(),
-          imageUrl: url,
-        };
-
-        await addDoc(merchantRef, productData);
-
-        toast.success(`${values.name} added successfully!`);
-
-        form.reset();
-
-        // redirect to the all products page
-        router.push("/dashboard/inventory/all-products");
-      }
-    } catch (error) {
+  // mutation to add product in the inventory
+  const { mutate: server_addProduct } = useMutation({
+    mutationFn: async ({
+      values,
+      imageUrl,
+      merchantId,
+    }: {
+      values: z.infer<typeof formSchema>;
+      imageUrl: string;
+      merchantId: string;
+    }) =>
+      await addProduct({
+        ...values,
+        imageUrl,
+        createdAt: new Date(),
+        totalOrders: 0,
+        merchantId,
+      }),
+    onError: (error) => {
       console.log(error);
-      toast.error("Error adding product.");
+      toast.error("An error occurred while adding the product.");
+    },
+    onSuccess: () => {
+      toast.success("Product added successfully.", {
+        icon: <BadgeCheckIcon className="size-4" />,
+      });
+    },
+  });
+
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    // do the image handling and return the name to be passed to add product
+
+    if (!productImageUrl) {
+      toast.error("Please upload a product image.", {
+        icon: <ImageIcon className="size-4" />,
+      });
+    } else {
+      // auth to pass the merchant id
+      const merchantId = auth.currentUser!.uid;
+
+      const storageRef = ref(storage, `productImages/${productImageUrl.name}`);
+
+      // create an upload task for the selected Image
+      const snapshot = await uploadBytes(storageRef, productImageUrl);
+      const url = await getDownloadURL(snapshot.ref);
+
+      server_addProduct({ values, imageUrl: url, merchantId });
     }
   };
 
@@ -150,12 +150,15 @@ const AddProductForm = () => {
           </div>
         </div>
         <form className="mt-6" onSubmit={form.handleSubmit(onSubmit)}>
-          <Button className="font-normal text-xs bg-brandblue h-[30px] hover:bg-brandblue/80">
+          <Button
+            className="font-normal text-xs bg-brandblue h-[30px] hover:bg-brandblue/80"
+            type="submit"
+          >
             Save product
           </Button>
           <section className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-4">
             <Card className="col-span-2">
-              <CardHeader>
+              <CardHeader className="flex flex-col">
                 <CardTitle>Product Details</CardTitle>
                 <CardDescription>
                   Fill in the details of the product you want to add to your
@@ -206,7 +209,7 @@ const AddProductForm = () => {
             </Card>
             {/* quantity, price, fragility */}
             <Card className="row-start-2 col-span-2">
-              <CardHeader>
+              <CardHeader className="flex flex-col">
                 <CardTitle>Stock</CardTitle>
                 <CardDescription>
                   Fill in the quantity, price and fragility of the product.
@@ -292,7 +295,7 @@ const AddProductForm = () => {
             {/* product images */}
             {/* get the product image and pass it to the form to add to the product details */}
             <Card className="max-sm:col-span-2">
-              <CardHeader>
+              <CardHeader className="flex flex-col">
                 <CardTitle>Product Image</CardTitle>
                 <CardDescription>
                   Upload an image of the product.
@@ -307,7 +310,7 @@ const AddProductForm = () => {
             </Card>
             {/* draft the project */}
             <Card className="max-sm:col-span-2">
-              <CardHeader>
+              <CardHeader className="flex flex-col">
                 <CardTitle>Product Category</CardTitle>
                 <CardDescription>Choose category.</CardDescription>
               </CardHeader>

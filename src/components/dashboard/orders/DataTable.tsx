@@ -88,6 +88,10 @@ export function DataTable<TData, TValue>({
     },
     { label: "Arrived", filter: "arrived", color: "bg-gray-600" },
     { label: "Reached", filter: "reached", color: "bg-red-500" },
+
+    { label: "Rejected", filter: "rejected", color: "bg-red-600" },
+    { label: "Cancelled", filter: "cancelled", color: "bg-red-600" },
+    { label: "In Review", filter: "inreview", color: "bg-amber-600" },
   ];
 
   return (

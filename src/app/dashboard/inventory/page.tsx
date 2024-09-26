@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
-import { collection, doc, getDoc, getDocs } from "firebase/firestore";
+
 import {
   Tooltip,
   TooltipContent,
@@ -28,35 +28,27 @@ import { MostOrderedGraph } from "@/components/dashboard/inventory/MostOrderedGr
 import { LowStockGraph } from "@/components/dashboard/inventory/LowStockGraph";
 import { InventoryOverview } from "@/components/dashboard/inventory/InventoryOverview";
 import { inventoryOverviewColumns } from "@/components/dashboard/ColumnDef";
-import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
+
+import { useQuery } from "@tanstack/react-query";
+import { getInventory } from "@/lib/actions/product.actions";
+import { getMonthlyProductSales } from "@/lib/actions/order.actions";
+
+import InventoryLoading from "@/components/skeletons/InventoryLoading";
 
 const Page = () => {
-  const [inventory, setInventory] = useState<any>([]);
   const [inventoryOverviewData, setInventoryOverviewData] = useState<any>([]);
 
   const [lowStock, setLowStock] = useState<any>([]);
+  const [mostOrdered, setMostOrdered] = useState<any>([]);
 
-  const router = useRouter();
+  const merchantId = auth.currentUser!.uid;
 
-  useEffect(() => {
-    (async () => {
-      const user = auth.currentUser;
-
-      // get the merchant
-      const merchnatRef = collection(db, "merchants", user!.uid, "inventory");
-      const merchantSnap = await getDocs(merchnatRef);
-
-      // Loop through the documents and log the data after calculating the total sales using the orders
-      const totalInventory: any = [];
-      merchantSnap.forEach((doc) => {
-        totalInventory.push({ id: doc.id, ...doc.data() });
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["inventory"],
+    queryFn: async () => {
+      const totalInventory = await getInventory({
+        merchantId,
       });
-
-      //   setting inventory
-      setInventory((prev: any) => totalInventory);
-
-      console.log(totalInventory);
 
       // setting inventory overview data
       setInventoryOverviewData((prev: any) =>
@@ -77,21 +69,55 @@ const Page = () => {
       }, totalInventory[0]);
 
       setLowStock((prev: any) => lowestStock);
-    })();
-  }, []);
 
-  if (inventory.length === 0) {
+      const lowStockMonthlyOrders = await getMonthlyProductSales({
+        merchantId,
+        productId: lowestStock.id,
+        numMonths: 6,
+      });
+
+      const lowStockChartData = lowStockMonthlyOrders.map((order: any) => {
+        return { month: order.month, numOrdered: order.sales };
+      });
+
+      // most ordered chart data
+      const mostOrdered = totalInventory.reduce((most: any, item: any) => {
+        return most.quantity > item.quantity ? item : most;
+      }, totalInventory[0]);
+
+      console.log("most ordered", mostOrdered);
+
+      setMostOrdered((prev: any) => mostOrdered);
+
+      const mostOrderedMonthlyOrders = await getMonthlyProductSales({
+        merchantId,
+        productId: mostOrdered.id,
+        numMonths: 6,
+      });
+
+      const mostOrderedChartData = mostOrderedMonthlyOrders.map(
+        (order: any) => {
+          return { month: order.month, numOrdered: order.sales };
+        }
+      );
+
+      return { totalInventory, lowStockChartData, mostOrderedChartData };
+    },
+    refetchInterval: 5000,
+  });
+
+  if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-96">
-        <div className="text-2xl font-medium">Loading...</div>
-      </div>
+      <>
+        <InventoryLoading />
+      </>
     );
   }
 
   return (
     <>
       <main className="grid grid-cols-1 md:grid-cols-2 mb-6 gap-6 w-full">
-        {/* most ordered product */}
+        {/* Low stock product */}
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -112,11 +138,11 @@ const Page = () => {
                       {lowStock.quantity} units remaining
                     </Badge>
                     <Badge variant={"blue"} className="mt-3">
-                      Category
+                      {lowStock.category}
                     </Badge>
                   </div>
                   <div className="mt-8">
-                    <LowStockGraph />
+                    <LowStockGraph chartData={data?.lowStockChartData || []} />
                   </div>
                 </CardContent>
               </Card>
@@ -140,18 +166,21 @@ const Page = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl md:text-3xl font-bold truncate">
-                    Product name
+                    {mostOrdered.name}
                   </div>
                   <div className="flex flex-wrap gap-2 items-center">
                     <Badge variant={"brandPositive"} className="mt-3">
-                      <Box className="size-4 mr-1" />5 units sold
+                      <Box className="size-4 mr-1" />
+                      {mostOrdered.totalOrders} units sold
                     </Badge>
                     <Badge variant={"blue"} className="mt-3">
-                      Category
+                      {mostOrdered.category}
                     </Badge>
                   </div>
                   <div className="mt-8">
-                    <MostOrderedGraph />
+                    <MostOrderedGraph
+                      chartData={data?.mostOrderedChartData || []}
+                    />
                   </div>
                 </CardContent>
               </Card>
@@ -165,7 +194,7 @@ const Page = () => {
         {/* inventory overview table */}
         <section className="md:col-span-2">
           <Card className="col-span-2 overflow-x-hidden">
-            <CardHeader className="px-7">
+            <CardHeader className="px-7 flex flex-col">
               <CardTitle className="flex justify-between flex-col-reverse gap-4 sm:flex-row w-full md:items-center ">
                 <span>Inventory Overview</span>
               </CardTitle>
