@@ -34,9 +34,14 @@ import {
 } from "@/components/ui/accordion";
 import { getMonth } from "date-fns";
 
-const OrderAnalytics = ({ orders }: { orders: Order[] }) => {
+const OrderAnalytics = ({
+  orders,
+  isLoading,
+}: {
+  orders: Order[] | undefined;
+  isLoading: boolean;
+}) => {
   const [scope, setScope] = React.useState<string>("week");
-  const [width, setWidth] = React.useState<number>(window.innerWidth);
   const [currentMonthScope, setCurrentMonthScope] = React.useState<string>(
     new Date().getFullYear().toString()
   );
@@ -59,7 +64,7 @@ const OrderAnalytics = ({ orders }: { orders: Order[] }) => {
 
   React.useEffect(() => {
     const bufferData = { ...categorizedData };
-    orders.forEach((order) => {
+    orders?.forEach((order) => {
       const orderDate = timestampToDate(order.createdAt);
       const year = orderDate.getFullYear();
       const month = orderDate.getMonth() + 1; // getMonth() returns 0-indexed, so add 1
@@ -88,7 +93,7 @@ const OrderAnalytics = ({ orders }: { orders: Order[] }) => {
       }
     });
     setCategorizedData(bufferData);
-  }, [orders]);
+  }, []);
 
   useEffect(() => {
     setYearData(() => {
@@ -138,7 +143,6 @@ const OrderAnalytics = ({ orders }: { orders: Order[] }) => {
           revenue: order.revenue,
         });
       });
-      console.log("running");
     });
 
     const currentMonth = new Date().getMonth() + 1;
@@ -164,9 +168,6 @@ const OrderAnalytics = ({ orders }: { orders: Order[] }) => {
       },
     ]);
   }, [categorizedData]);
-
-  console.log(weekData?.length);
-  console.log(categorizedData);
 
   return (
     <div className="p-5 max-sm:px-0 flex flex-col gap-5">

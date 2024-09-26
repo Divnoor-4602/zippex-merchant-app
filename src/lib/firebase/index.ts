@@ -1,6 +1,6 @@
 // sdk functions
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { getAuth, multiFactor, User } from "firebase/auth";
 import { initializeFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
@@ -24,3 +24,7 @@ export const db = initializeFirestore(app, {
   experimentalForceLongPolling: true,
 });
 export const storage = getStorage(app);
+
+export const isUserMFAEnrolled = (user: User) => {
+  return multiFactor(user).enrolledFactors.length > 0;
+};

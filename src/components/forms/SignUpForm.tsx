@@ -146,7 +146,10 @@ const SignUpForm = () => {
       setIsLoading(false);
       form.reset();
       toast.success("Account created successfully!");
-      router.push("/business-on-boarding");
+      toast.info("Please verify your email to continue");
+      router.push("/verify-email");
+      //!Recheck this once
+      // router.push("/business-on-boarding");
     } catch (error) {
       console.log(error);
       toast.error("Cannot sign in right now!, Please try again later");
