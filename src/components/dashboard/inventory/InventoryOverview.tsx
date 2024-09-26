@@ -46,7 +46,12 @@ export function InventoryOverview<TData, TValue>({
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
-  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [sorting, setSorting] = React.useState<SortingState>([
+    {
+      id: "name",
+      desc: false,
+    },
+  ]);
 
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});

@@ -116,14 +116,14 @@ const Page = () => {
     color = "bg-blue-600";
   } else if (currentOrder?.orderStatus.toLowerCase() === "arrived") {
     color = "bg-gray-600";
-  } else if (currentOrder?.orderStatus.toLowerCase() === "arrivedD") {
+  } else if (currentOrder?.orderStatus === "arrivedD") {
     color = "bg-purple-600";
   } else if (
     currentOrder?.orderStatus.toLowerCase() === "cancelled" ||
     "rejected"
   ) {
     color = "bg-red-600";
-  } else if (currentOrder?.orderStatus.toLowerCase() === "inReview") {
+  } else if (currentOrder?.orderStatus.toLowerCase() === "inreview") {
     color = "bg-amber-600";
   }
 

@@ -50,7 +50,9 @@ export function OrderHistoryTable<TData, TValue>({
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
-  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [sorting, setSorting] = React.useState<SortingState>([
+    { id: "date", desc: true },
+  ]);
 
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
@@ -90,6 +92,10 @@ export function OrderHistoryTable<TData, TValue>({
     },
     { label: "Arrived", filter: "arrived", color: "bg-gray-600" },
     { label: "Reached", filter: "reached", color: "bg-red-500" },
+
+    { label: "Rejected", filter: "rejected", color: "bg-red-600" },
+    { label: "Cancelled", filter: "cancelled", color: "bg-red-600" },
+    { label: "In Review", filter: "inreview", color: "bg-amber-600" },
   ];
 
   return (

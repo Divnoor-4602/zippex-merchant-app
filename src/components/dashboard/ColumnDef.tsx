@@ -24,12 +24,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import {
-  deleteProduct,
-  redirectEditProduct,
-} from "@/lib/actions/product.actions";
-
-import { toggleValidationDiscount } from "@/lib/actions/discount.actions";
+import { redirectEditProduct } from "@/lib/actions/product.actions";
 
 export const columns: ColumnDef<any>[] = [
   {
@@ -92,7 +87,7 @@ export const columns: ColumnDef<any>[] = [
             <span>{status}</span>
           </span>
         );
-      } else if (status.toLowerCase() === "arrivedD") {
+      } else if (status === "arrivedD") {
         return (
           <span className="flex items-center gap-1">
             <div className="rounded-full bg-purple-600 size-3 animate-pulse" />
@@ -113,7 +108,7 @@ export const columns: ColumnDef<any>[] = [
             <span>{status}</span>
           </span>
         );
-      } else if (status.toLowerCase() === "inReview") {
+      } else if (status.toLowerCase() === "inreview") {
         return (
           <span className="flex items-center gap-1">
             <div className="rounded-full bg-amber-600 size-3 animate-pulse" />

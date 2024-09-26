@@ -30,17 +30,23 @@ interface OrderDetailsProps {
 export const OrderDetails = ({ currentOrder }: OrderDetailsProps) => {
   console.log(currentOrder);
   let color;
-
-  if (currentOrder.orderStatus.toLowerCase() === "complete") {
+  if (currentOrder?.orderStatus.toLowerCase() === "complete") {
     color = "bg-green-600";
-  } else if (currentOrder.orderStatus.toLowerCase() === "pending") {
+  } else if (currentOrder?.orderStatus.toLowerCase() === "pending") {
     color = "bg-yellow-400";
-  } else if (currentOrder.orderStatus.toLowerCase() === "accepted") {
+  } else if (currentOrder?.orderStatus.toLowerCase() === "accepted") {
     color = "bg-blue-600";
-  } else if (currentOrder.orderStatus.toLowerCase() === "arrived") {
+  } else if (currentOrder?.orderStatus.toLowerCase() === "arrived") {
     color = "bg-gray-600";
-  } else if (currentOrder.orderStatus.toLowerCase() === "arrivedD") {
+  } else if (currentOrder?.orderStatus === "arrivedD") {
+    color = "bg-purple-600";
+  } else if (
+    currentOrder?.orderStatus.toLowerCase() === "cancelled" ||
+    "rejected"
+  ) {
     color = "bg-red-600";
+  } else if (currentOrder?.orderStatus.toLowerCase() === "inreview") {
+    color = "bg-amber-600";
   }
 
   const totalPrice = currentOrder.basket.reduce((acc: any, item: any) => {
@@ -268,7 +274,9 @@ export const OrderDetails = ({ currentOrder }: OrderDetailsProps) => {
           <div className="flex items-center gap-2">
             <div className={`${color} rounded-full size-4 animate-pulse`} />
             <div className="text-sm font-medium">
-              {currentOrder.orderStatus}
+              {currentOrder.orderStatus === "inReview"
+                ? "In review"
+                : capitalizeFirstLetter(currentOrder.orderStatus)}
             </div>
           </div>
         </CardFooter>
