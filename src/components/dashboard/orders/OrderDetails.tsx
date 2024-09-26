@@ -243,8 +243,8 @@ export const OrderDetails = ({ currentOrder }: OrderDetailsProps) => {
                 Customer
               </div>
               <div className="text-sm font-normal">
-                {capitalizeFirstLetter(currentOrder.customer.firstName)}{" "}
-                {capitalizeFirstLetter(currentOrder.customer.lastName)}
+                {capitalizeFirstLetter(currentOrder?.customer?.firstName)}{" "}
+                {capitalizeFirstLetter(currentOrder?.customer?.lastName)}
               </div>
             </div>
             <div className="flex justify-between ">
@@ -252,7 +252,7 @@ export const OrderDetails = ({ currentOrder }: OrderDetailsProps) => {
                 Email
               </div>
               <div className="text-sm font-normal">
-                {currentOrder.customer.email}
+                {currentOrder?.customer?.email}
               </div>
             </div>
             <div className="flex justify-between ">
@@ -260,7 +260,7 @@ export const OrderDetails = ({ currentOrder }: OrderDetailsProps) => {
                 Phone
               </div>
               <div className="text-sm font-normal">
-                {currentOrder.customer.phoneNumber}
+                {currentOrder?.customer?.phoneNumber}
               </div>
             </div>
           </div>

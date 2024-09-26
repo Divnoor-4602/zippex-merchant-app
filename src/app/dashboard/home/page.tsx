@@ -40,7 +40,6 @@ const Page = () => {
 
   const merchant = auth.currentUser;
   const merchnatId = merchant!.uid;
-
   const date = new Date();
   const currentMonth = months[date.getMonth()];
   const currentYear = date.getFullYear();

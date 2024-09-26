@@ -123,8 +123,8 @@ const TotalOrders = ({ recurrence, className, orders }: TotalOrdersProps) => {
   const formattedOrders = orders.map((order: any) => {
     return {
       customer: `${capitalizeFirstLetter(
-        order.customer.firstName
-      )} ${capitalizeFirstLetter(order.customer.lastName)} ${order.id}`,
+        order?.customer?.firstName
+      )} ${capitalizeFirstLetter(order?.customer?.lastName)} ${order.id}`,
 
       type: order.orderType,
 

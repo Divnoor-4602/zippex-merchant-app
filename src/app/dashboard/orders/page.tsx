@@ -297,8 +297,8 @@ const Page = () => {
                       Customer
                     </div>
                     <div className="text-sm font-normal">
-                      {capitalizeFirstLetter(currentOrder.customer?.firstName)}{" "}
-                      {capitalizeFirstLetter(currentOrder.customer?.lastName)}
+                      {capitalizeFirstLetter(currentOrder?.customer?.firstName)}{" "}
+                      {capitalizeFirstLetter(currentOrder?.customer?.lastName)}
                     </div>
                   </div>
                   <div className="flex justify-between">
@@ -306,7 +306,7 @@ const Page = () => {
                       Email
                     </div>
                     <div className="text-sm font-normal">
-                      {currentOrder.customer.email}
+                      {currentOrder?.customer?.email}
                     </div>
                   </div>
                   <div className="flex justify-between">
@@ -314,7 +314,7 @@ const Page = () => {
                       Phone
                     </div>
                     <div className="text-sm font-normal">
-                      {currentOrder.customer.phoneNumber}
+                      {currentOrder?.customer?.phoneNumber}
                     </div>
                   </div>
                 </div>
@@ -343,8 +343,9 @@ const Page = () => {
 
       {/* order details dialog */}
 
-      <main className="grid lg:grid-cols-3  grid-cols-1 gap-6 mb-6">
+      <main className="grid lg:grid-cols-[repeat(3,minmax(200px,1fr))] grid-cols-[repeat(1,minmax(200px,1fr))] gap-6 mb-6">
         {/* total orders : yearly monthly weekly daily */}
+        {/* <div className="max-lg:col-span-1 max-lg:gap-6 max-lg:flex-col flex col-span-3 w-full"> */}
         <DashboardCard
           title="This Week"
           badgeValue="20.1%"
@@ -379,10 +380,11 @@ const Page = () => {
           value={700}
           badgeVariant="brandPositive"
         />
+        {/* </div> */}
 
         {/* todo: create a search bar to search any order details from total orders using an order id */}
 
-        <Tabs defaultValue="year" className="md:col-span-3">
+        <Tabs defaultValue="year" className="lg:col-span-3 col-span-3">
           <TabsList>
             <TabsTrigger value="year">Year</TabsTrigger>
             <TabsTrigger value="month">Month</TabsTrigger>
@@ -408,8 +410,8 @@ const Page = () => {
         </Tabs>
 
         {/* order history and order bill table */}
-        <section className="md:col-span-2">
-          <Card className="col-span-2 overflow-x-hidden">
+        <section className="lg:col-span-2 col-span-3">
+          <Card className=" overflow-x-hidden">
             <CardHeader className="px-7">
               <CardTitle>Order History</CardTitle>
               <CardDescription>
@@ -429,7 +431,7 @@ const Page = () => {
           </Card>
         </section>
         {/* selected order details */}
-        <section className="">
+        <section className="max-lg:col-span-3">
           <OrderDetails currentOrder={currentOrder} />
         </section>
       </main>

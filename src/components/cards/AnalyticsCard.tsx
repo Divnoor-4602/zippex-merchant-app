@@ -2,7 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Card } from "../ui/card";
 import { Badge, BadgeProps } from "../ui/badge";
-import { X } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 import {
   Bar,
   BarChart,
@@ -11,6 +11,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const AnalyticsCard = ({
   openCondition,
@@ -21,6 +22,9 @@ const AnalyticsCard = ({
   badgeVariant,
   layoutId,
   badgeValue,
+  labelListColor = "#fff",
+  labelListPosition = "right",
+  isLoading,
 }: {
   openCondition: boolean;
   setOpenCondition: React.Dispatch<React.SetStateAction<boolean>>;
@@ -38,6 +42,9 @@ const AnalyticsCard = ({
     | undefined;
   layoutId: string;
   badgeValue: string;
+  labelListColor?: string;
+  labelListPosition?: "right" | "insideLeft" | "insideRight";
+  isLoading: boolean;
 }) => {
   return (
     <>
@@ -49,32 +56,39 @@ const AnalyticsCard = ({
         }}
         layoutId={layoutId}
       >
-        <Card className="flex flex-col gap-2 p-5 max-sm:p-3 w-full group hover:cursor-pointer h-full min-h-[200px]">
-          <motion.h4
-            className="text-sm font-medium text-black  w-full rounded-xl flex justify-between items-center gap-2"
-            layoutId={`${layoutId}-heading`}
-          >
-            <span>{title}</span>
-            <Icon size={20} className="text-gray-500" />
-          </motion.h4>
-          {data.length === 0 ? (
-            <Badge variant={badgeVariant} className="w-fit my-4">
-              No data available yet
-            </Badge>
-          ) : (
-            <>
-              <p className="text-2xl md:text-3xl font-bold truncate text-black">
-                {data[0]?.name}
-              </p>
-              <Badge variant={badgeVariant} className="mt-3 w-fit">
-                {badgeValue}
+        {isLoading ? (
+          <Card className="flex flex-col gap-2 p-5 max-sm:p-3 w-full group hover:cursor-pointer h-full min-h-[200px] justify-center items-center">
+            {/* <Skeleton className="text-sm font-medium text-black  w-full rounded-xl flex justify-between items-center gap-2" /> */}
+            <Loader2 className="animate-spin" size={20} />
+          </Card>
+        ) : (
+          <Card className="flex flex-col gap-2 p-5 max-sm:p-3 w-full group hover:cursor-pointer h-full min-h-[200px]">
+            <motion.h4
+              className="text-sm font-medium text-black  w-full rounded-xl flex justify-between items-center gap-2"
+              layoutId={`${layoutId}-heading`}
+            >
+              <span>{title}</span>
+              <Icon size={20} className="text-gray-500" />
+            </motion.h4>
+            {data.length === 0 ? (
+              <Badge variant={badgeVariant} className="w-fit my-4">
+                No data available yet
               </Badge>
-              <p className="text-xs group-hover:underline p-2 text-slate-600">
-                Open this card to view more details...
-              </p>
-            </>
-          )}
-        </Card>
+            ) : (
+              <>
+                <p className="text-2xl md:text-3xl font-bold truncate text-black">
+                  {data[0]?.name}
+                </p>
+                <Badge variant={badgeVariant} className="mt-3 w-fit">
+                  {badgeValue}
+                </Badge>
+                <p className="text-xs group-hover:underline p-2 text-slate-600">
+                  Open this card to view more details...
+                </p>
+              </>
+            )}
+          </Card>
+        )}
       </motion.div>
       {openCondition && (
         <div className="fixed top-0 left-0 w-[100vw] h-[100vh] bg-black/20 flex justify-center items-center z-50">
@@ -130,9 +144,14 @@ const AnalyticsCard = ({
                     <LabelList
                       dataKey="name"
                       position="insideLeft"
-                      fill="#fff"
+                      fill={labelListColor}
+                      className=""
                     />
-                    <LabelList dataKey={"quantity"} position="right" fill="" />
+                    <LabelList
+                      dataKey={"quantity"}
+                      position={labelListPosition}
+                      fill=""
+                    />
                     {/* {//!Implement tooltip} */}
                   </Bar>
                   <YAxis dataKey={"name"} type="category" width={100} hide />
