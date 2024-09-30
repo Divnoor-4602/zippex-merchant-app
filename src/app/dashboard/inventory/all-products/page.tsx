@@ -18,6 +18,7 @@ import { deleteProduct, getInventory } from "@/lib/actions/product.actions";
 import { toast } from "sonner";
 import { ChevronLeft, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Page = () => {
   const [allProducts, setAllProducts] = useState<any>([]);
@@ -117,7 +118,12 @@ const Page = () => {
   });
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <main className="grid grid-cols-1 gap-4">
+        <Skeleton className="w-[35px] h-[35px]" />
+        <Skeleton className="w-full h-[400px]" />
+      </main>
+    );
   }
 
   return (

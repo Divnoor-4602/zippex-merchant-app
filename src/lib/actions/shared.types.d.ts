@@ -64,3 +64,14 @@ export interface GetMonthlyProductSalesProps {
   productId: string;
   numMonths: number;
 }
+
+export interface UpdateOrderStatusProps {
+  orderId: string;
+  orderStatus: string;
+  merchantId: string;
+}
+
+export interface GetOrdersByStatusProps {
+  orderStatus: string;
+  merchantId: string;
+}

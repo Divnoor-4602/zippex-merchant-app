@@ -29,7 +29,7 @@ import { auth, db } from "@/lib/firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 
 // sign in into the account check if onboarding is compplete, if not redirect to onboarding otherwise redirect to home
 
@@ -53,6 +53,7 @@ const SignInForm = () => {
   });
 
   const [loading, setLoading] = useState<boolean>(false);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
   const router = useRouter();
 
   // form submit handler
@@ -71,23 +72,43 @@ const SignInForm = () => {
       const merchantSnap = await getDoc(merchantRef);
 
       const merchantData = merchantSnap.data();
-      //!Uncomment this
-      // if (!response.user.emailVerified) {
-      //   toast.warning("Please verify your email to sign in!");
-      //   router.push("/verify-email");
-      //   return;
-      // }
+
+      //todo: when you add the shopfy integration, add it after the verification as we do not want to add in the inventory if the merchant is not verified, and once they are verified then we ove on the shopify or the inventory import and then we go to the home screen at the very end
 
       if (merchantData?.isOnBoarded) {
-        toast.success("Sign in successful! Redirecting to dashboard");
-        setLoading((prev) => false);
-        form.reset();
-        router.push(`/dashboard/home`);
+        if (merchantData?.isVerified) {
+          toast.success("Sign in successful! Redirecting to dashboard");
+          setLoading((prev) => false);
+          form.reset();
+          router.push("/dashboard/home");
+        } else {
+          toast.warning(
+            "Your account is not verified yet, please wait for the verification process to complete!"
+          );
+          router.push("/business-on-boarding/business-verification-pending");
+        }
       } else {
-        toast.warning(
-          "You need to complete your onboarding process! Redirecting to onboarding"
-        );
-        router.push("/business-on-boarding");
+        switch (merchantData?.onboardingStep) {
+          case 0:
+            toast.warning(
+              "Please finish your onboarding process to access your Dashboard!"
+            );
+            router.push("/business-on-boarding");
+            break;
+          case 1:
+            toast.warning(
+              "Please finish your onboarding process to access your Dashboard!"
+            );
+            router.push("/business-on-boarding/business-document-on-boarding");
+            break;
+
+          case 2:
+            toast.warning(
+              "Please finish your onboarding process to access your Dashboard!"
+            );
+            router.push("/business-on-boarding/business-verification-pending");
+            break;
+        }
       }
     } catch (error: any) {
       console.log(error);
@@ -144,22 +165,31 @@ const SignInForm = () => {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <div className="flex w-full justify-between items-center"></div>
                     <FormControl className="mt-2.5">
-                      <Input
-                        placeholder="Password"
-                        type="password"
-                        {...field}
-                        className="no-focus bg-gray-300 no-border"
-                      />
+                      <div className="relative">
+                        <Input
+                          placeholder="Password"
+                          type={showPassword ? "text" : "password"}
+                          {...field}
+                          className="no-focus bg-gray-300 border-none pr-10"
+                        />
+                        <button
+                          type="button"
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                          onClick={() => setShowPassword(!showPassword)}
+                          aria-label={
+                            showPassword ? "Hide password" : "Show password"
+                          }
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-5 w-5 text-gray-500" />
+                          ) : (
+                            <Eye className="h-5 w-5 text-gray-500" />
+                          )}
+                        </button>
+                      </div>
                     </FormControl>
-                    <Link
-                      href="/forgot-password"
-                      className="text-xs text-gray-500 hover:text-brandblue transition-colors"
-                    >
-                      Forgot password?
-                    </Link>
-                    <FormMessage />
+                    <FormMessage className="w-[75%]" />
                   </FormItem>
                 )}
               />

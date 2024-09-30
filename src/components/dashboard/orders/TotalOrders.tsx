@@ -58,56 +58,59 @@ export const columns: ColumnDef<any>[] = [
     accessorKey: "status",
     cell: ({ row }) => {
       const status = row.getValue("status") as string;
-      if (status.toLowerCase() === "complete") {
+
+      console.log(status);
+
+      if (status === "Complete") {
         return (
           <span className="flex items-center gap-1">
             <div className="rounded-full bg-green-600 size-3 animate-pulse" />
             <span>{status}</span>
           </span>
         );
-      } else if (status.toLowerCase() === "pending") {
+      } else if (status === "Pending") {
         return (
           <span className="flex items-center gap-1">
             <div className="rounded-full bg-yellow-400 size-3 animate-pulse" />
             <span>{status}</span>
           </span>
         );
-      } else if (status.toLowerCase() === "accepted") {
+      } else if (status === "Accepted") {
         return (
           <span className="flex items-center gap-1">
             <div className="rounded-full bg-blue-600 size-3 animate-pulse" />
             <span>{status}</span>
           </span>
         );
-      } else if (status.toLowerCase() === "arrived") {
+      } else if (status === "Arrived") {
         return (
           <span className="flex items-center gap-1">
             <div className="rounded-full bg-gray-600 size-3 animate-pulse" />
             <span>{status}</span>
           </span>
         );
-      } else if (status.toLowerCase() === "arrivedD") {
+      } else if (status === "ArrivedD") {
         return (
           <span className="flex items-center gap-1">
             <div className="rounded-full bg-purple-600 size-3 animate-pulse" />
             <span>reached</span>
           </span>
         );
-      } else if (status.toLowerCase() === "rejected") {
+      } else if (status === "Rejected") {
         return (
           <span className="flex items-center gap-1">
             <div className="rounded-full bg-red-600 size-3 animate-pulse" />
             <span>{status}</span>
           </span>
         );
-      } else if (status.toLowerCase() === "cancelled") {
+      } else if (status === "Cancelled") {
         return (
           <span className="flex items-center gap-1">
             <div className="rounded-full bg-red-600 size-3 animate-pulse" />
             <span>{status}</span>
           </span>
         );
-      } else if (status.toLowerCase() === "inreview") {
+      } else if (status === "inReview") {
         return (
           <span className="flex items-center gap-1">
             <div className="rounded-full bg-amber-600 size-3 animate-pulse" />

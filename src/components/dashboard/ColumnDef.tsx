@@ -6,7 +6,9 @@ import { capitalizeFirstLetter } from "@/lib/utils";
 import Image from "next/image";
 import { Badge } from "../ui/badge";
 import {
+  CircleX,
   EllipsisIcon,
+  PackageCheckIcon,
   PencilIcon,
   ShieldIcon,
   TicketCheckIcon,
@@ -25,6 +27,7 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { redirectEditProduct } from "@/lib/actions/product.actions";
+import { updateOrderStatus } from "@/lib/actions/order.actions";
 
 export const columns: ColumnDef<any>[] = [
   {
@@ -59,56 +62,57 @@ export const columns: ColumnDef<any>[] = [
     accessorKey: "status",
     cell: ({ row }) => {
       const status = row.getValue("status") as string;
-      if (status.toLowerCase() === "complete") {
+
+      if (status === "Complete") {
         return (
           <span className="flex items-center gap-1">
             <div className="rounded-full bg-green-600 size-3 animate-pulse" />
             <span>{status}</span>
           </span>
         );
-      } else if (status.toLowerCase() === "pending") {
+      } else if (status === "Pending") {
         return (
           <span className="flex items-center gap-1">
             <div className="rounded-full bg-yellow-400 size-3 animate-pulse" />
             <span>{status}</span>
           </span>
         );
-      } else if (status.toLowerCase() === "accepted") {
+      } else if (status === "Accepted") {
         return (
           <span className="flex items-center gap-1">
             <div className="rounded-full bg-blue-600 size-3 animate-pulse" />
             <span>{status}</span>
           </span>
         );
-      } else if (status.toLowerCase() === "arrived") {
+      } else if (status === "Arrived") {
         return (
           <span className="flex items-center gap-1">
             <div className="rounded-full bg-gray-600 size-3 animate-pulse" />
             <span>{status}</span>
           </span>
         );
-      } else if (status === "arrivedD") {
+      } else if (status === "ArrivedD") {
         return (
           <span className="flex items-center gap-1">
             <div className="rounded-full bg-purple-600 size-3 animate-pulse" />
             <span>reached</span>
           </span>
         );
-      } else if (status.toLowerCase() === "rejected") {
+      } else if (status === "Rejected") {
         return (
           <span className="flex items-center gap-1">
             <div className="rounded-full bg-red-600 size-3 animate-pulse" />
             <span>{status}</span>
           </span>
         );
-      } else if (status.toLowerCase() === "cancelled") {
+      } else if (status === "Cancelled") {
         return (
           <span className="flex items-center gap-1">
             <div className="rounded-full bg-red-600 size-3 animate-pulse" />
             <span>{status}</span>
           </span>
         );
-      } else if (status.toLowerCase() === "inreview") {
+      } else if (status === "inReview") {
         return (
           <span className="flex items-center gap-1">
             <div className="rounded-full bg-amber-600 size-3 animate-pulse" />
@@ -669,6 +673,166 @@ export const allDiscountsColumns: ColumnDef<any>[] = [
                   <span>Validate</span>
                 </span>
               )}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      );
+    },
+  },
+];
+
+export const pendingRequestsColumns: ColumnDef<any>[] = [
+  // Order id
+  {
+    header: ({ column }) => {
+      return <DataTableColumnHeader column={column} title="Order ID" />;
+    },
+    accessorKey: "id",
+    cell: (row: any) => {
+      const orderId = row.getValue("id");
+
+      return (
+        <>
+          <div className="font-medium">{orderId}</div>
+        </>
+      );
+    },
+  },
+  // customer name
+  {
+    header: ({ column }) => {
+      return <DataTableColumnHeader column={column} title="Customer" />;
+    },
+    accessorKey: "customer",
+    cell: (row: any) => {
+      const firstName = row.getValue("customer");
+
+      return (
+        <>
+          <div className="font-normal">{firstName}</div>
+        </>
+      );
+    },
+  },
+  // location
+  {
+    header: ({ column }) => {
+      return <DataTableColumnHeader column={column} title="Location" />;
+    },
+    accessorKey: "location",
+    cell: (row: any) => {
+      const location = row.getValue("location");
+
+      return (
+        <>
+          <div className="font-normal">{location}</div>
+        </>
+      );
+    },
+  },
+  // basket
+  {
+    header: ({ column }) => {
+      return <DataTableColumnHeader column={column} title="Basket" />;
+    },
+    accessorKey: "basket",
+    cell: (row: any) => {
+      const basket = row.getValue("basket");
+
+      return (
+        <>
+          <div className="font-normal">
+            {basket?.map((item: any) => (
+              <div key={item.id} className="flex items-center gap-2">
+                <div>{item.name}</div>
+                <div>x {item.quantity}</div>
+              </div>
+            ))}
+          </div>
+        </>
+      );
+    },
+  },
+  // subtotal
+  {
+    header: ({ column }) => {
+      return <DataTableColumnHeader column={column} title="Subtotal" />;
+    },
+    accessorKey: "subtotal",
+    cell: (row: any) => {
+      const subtotal = row.getValue("subtotal");
+
+      return (
+        <>
+          <div className="font-normal">${subtotal}</div>
+        </>
+      );
+    },
+  },
+  // time remaining
+  {
+    header: ({ column }) => {
+      return <DataTableColumnHeader column={column} title="Time Remaining" />;
+    },
+    accessorKey: "timeRemaining",
+    cell: (row: any) => {
+      const timeRemaining = row.getValue("timeRemaining");
+
+      const minutes = Math.floor(timeRemaining / 60);
+      const seconds = timeRemaining % 60;
+      const formattedTimeRemaining = `${minutes}m ${seconds}s`;
+
+      return (
+        <>
+          <div className="font-normal">{formattedTimeRemaining}</div>
+        </>
+      );
+    },
+  },
+  // actions
+
+  {
+    id: "actions",
+    cell: ({ row }) => {
+      const data = row.original;
+
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <EllipsisIcon className="size-4" />
+              <span className="sr-only">Open menu</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="">
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuItem
+              className="flex items-center gap-1"
+              onClick={async () => {
+                await updateOrderStatus({
+                  orderId: data.id,
+                  status: "accepted",
+                  merchantId: data.merchantId,
+                });
+                data.queryClient.invalidateQueries("pending-orders");
+              }}
+            >
+              <PackageCheckIcon className="size-4" />
+              <span>Accept</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="flex items-center gap-1"
+              onClick={async () => {
+                await updateOrderStatus({
+                  orderId: data.id,
+                  status: "rejected",
+                  merchantId: data.merchantId,
+                }),
+                  data.queryClient.invalidateQueries("pending-orders");
+              }}
+            >
+              <CircleX className="size-4" />
+              <span>Reject</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

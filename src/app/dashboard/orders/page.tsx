@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { auth, db } from "@/lib/firebase";
 import {
   capitalizeFirstLetter,
+  determineStatusColor,
   getDayRange,
   getMonthRange,
   getPreviousWeekRange,
@@ -51,7 +52,8 @@ import {
 import { Separator } from "../../../components/ui/separator";
 import { useQuery } from "@tanstack/react-query";
 import { getRecentOrders } from "@/lib/actions/order.actions";
-import useOrdersListener from "@/lib/hooks/useOrdersListener";
+
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Page = () => {
   // search input zod schem
@@ -65,12 +67,6 @@ const Page = () => {
   const merchantId = merchant!.uid;
 
   console.log(merchantId);
-
-  const {
-    data: allOrders,
-    isLoading: allOrdersLoading,
-    isError: allOrdersError,
-  } = useOrdersListener();
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["orders"],
@@ -95,37 +91,42 @@ const Page = () => {
         numMonths: 12,
       });
 
+      console.log("yearly orders", yearlyOrders);
+
       setCurrentOrder((prev: any) => monthlyOrders[0]);
 
       return { dailyOrders, weeklyOrders, monthlyOrders, yearlyOrders };
     },
   });
 
-  if (isLoading || allOrdersLoading) {
-    return <div>Loading...</div>;
+  if (isLoading || !currentOrder) {
+    return (
+      <>
+        <div className="w-full mb-6">
+          <div className="flex items-center justify-center gap-4 mb-6">
+            <Skeleton className="h-[35px] w-5/6" />
+            <Skeleton className="h-[35px] w-1/6" />
+          </div>
+
+          <main className="grid lg:grid-cols-3 grid-cols-1 gap-6 mb-6">
+            <Skeleton className="h-[175px] rounded-xl" />
+            <Skeleton className="h-[175px] rounded-xl" />
+            <Skeleton className="h-[175px] rounded-xl" />
+          </main>
+
+          <Skeleton className="w-full h-[400px]" />
+
+          <main className="grid lg:grid-cols-2 grid-cols-1 mt-6 gap-6">
+            <Skeleton className="h-[400px] rounded-xl" />
+            <Skeleton className="h-[400px] rounded-xl" />
+          </main>
+        </div>
+      </>
+    );
   }
 
   // order status: Complete, Pending, Accepted, Arrived, arrived D, Cancelled
-  let color;
-
-  if (currentOrder?.orderStatus.toLowerCase() === "complete") {
-    color = "bg-green-600";
-  } else if (currentOrder?.orderStatus.toLowerCase() === "pending") {
-    color = "bg-yellow-400";
-  } else if (currentOrder?.orderStatus.toLowerCase() === "accepted") {
-    color = "bg-blue-600";
-  } else if (currentOrder?.orderStatus.toLowerCase() === "arrived") {
-    color = "bg-gray-600";
-  } else if (currentOrder?.orderStatus === "arrivedD") {
-    color = "bg-purple-600";
-  } else if (
-    currentOrder?.orderStatus.toLowerCase() === "cancelled" ||
-    "rejected"
-  ) {
-    color = "bg-red-600";
-  } else if (currentOrder?.orderStatus.toLowerCase() === "inreview") {
-    color = "bg-amber-600";
-  }
+  let color = determineStatusColor(currentOrder?.orderStatus?.toLowerCase());
 
   // format orders for order history table
   const orderHistoryOrders = data?.monthlyOrders.map((order: any) => {
@@ -169,8 +170,6 @@ const Page = () => {
 
       const order = await getDoc(orderRef);
       const orderData = order.data();
-
-      console.log(orderData);
 
       setOpen((prev) => true);
     }
@@ -219,7 +218,7 @@ const Page = () => {
                   <div className="text-sm">
                     Date:{" "}
                     {format(
-                      currentOrder.createdAt.seconds * 1000,
+                      currentOrder?.createdAt.seconds * 1000,
                       "d MMMM, yyyy"
                     )}
                   </div>

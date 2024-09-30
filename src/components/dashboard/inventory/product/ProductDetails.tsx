@@ -24,6 +24,7 @@ import EditProductForm from "@/components/forms/EditProductForm";
 import { getProduct } from "@/lib/actions/product.actions";
 import { useQuery } from "@tanstack/react-query";
 import router from "next/router";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const ProductDetails = () => {
   const router = useRouter();
@@ -58,8 +59,18 @@ const ProductDetails = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <p>Loading...</p>
+      <div className="w-full">
+        <div className="flex items-center gap-4">
+          <Skeleton className="size-[35px]" />
+          <h1 className="text-xl font-semibold">Add Product</h1>
+        </div>
+        <Skeleton className="h-[30px] my-4 w-[100px]" />
+        <section className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-4">
+          <Skeleton className="col-span-2 h-[220px]" />
+          <Skeleton className=" h-[220px]" />
+          <Skeleton className="col-span-2 h-[250px]" />
+          <Skeleton className=" h-[250px]" />
+        </section>
       </div>
     );
   }

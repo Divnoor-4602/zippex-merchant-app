@@ -1,22 +1,22 @@
 "use client";
 
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { Button } from "../ui/button";
+import { useRouter } from "next/navigation";
 
 const PendingRequests = () => {
+  // use query to fetch pending orders
+
+  const router = useRouter();
+
   return (
     <>
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button className="h-[30px] text-xs" variant={"outline"}>
-            Pending orders
-          </Button>
-        </PopoverTrigger>
-      </Popover>
+      <Button
+        className="h-[30px] text-xs"
+        variant={"outline"}
+        onClick={() => router.push("/dashboard/pending-requests")}
+      >
+        Pending orders
+      </Button>
     </>
   );
 };

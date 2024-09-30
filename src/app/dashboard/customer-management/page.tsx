@@ -9,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { getMerchantCustomers } from "@/lib/actions/customer.actions";
 import { auth } from "@/lib/firebase";
 
@@ -24,7 +25,11 @@ const Page = () => {
   });
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div>
+        <Skeleton className="w-full mb-4 h-[400px]" />
+      </div>
+    );
   }
 
   if (isError) {

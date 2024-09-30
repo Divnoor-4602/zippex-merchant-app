@@ -125,3 +125,32 @@ export const verifyPhoneNumber = async (
     return false;
   }
 };
+
+export const determineStatusColor = (status: string) => {
+  switch (status) {
+    case "complete":
+      return "bg-green-600";
+      break;
+    case "pending":
+      return "bg-yellow-400";
+      break;
+    case "accepted":
+      return "bg-blue-600";
+      break;
+    case "arrived":
+      return "bg-gray-600";
+      break;
+    case "arrivedD":
+      return "bg-purple-600";
+      break;
+    case "rejected":
+      return "bg-red-600";
+      break;
+    case "cancelled":
+      return "bg-red-600";
+      break;
+    case "inReview":
+      return "bg-amber-600";
+      break;
+  }
+};

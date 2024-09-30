@@ -56,6 +56,7 @@ import HomeLoading from "@/components/skeletons/HomeLoading";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import NewOrderAlert from "@/components/shared/NewOrderAlert";
+import useOrdersListener from "@/lib/hooks/useOrdersListener";
 
 const Page = () => {
   const merchant = auth.currentUser;
@@ -66,6 +67,12 @@ const Page = () => {
   const currentYear = date.getFullYear();
 
   const currentDate = format(new Date(), "dd MMM");
+
+  const {
+    data: allOrders,
+    isLoading: allOrdersLoading,
+    isError: allOrdersError,
+  } = useOrdersListener();
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["totalRevenue"],
@@ -85,8 +92,6 @@ const Page = () => {
         merchantId,
         numMonths: 2,
       });
-
-      console.log(prevtwoMonthsRevenue);
 
       // difference in revenue between the last two months
       const revenueDifference =
@@ -129,8 +134,6 @@ const Page = () => {
         merchantId,
         numMonths: 2,
       });
-
-      console.log(monthlySales);
 
       let salesDifference = monthlySales[1].sales - monthlySales[0].sales;
       let salesPercentage;

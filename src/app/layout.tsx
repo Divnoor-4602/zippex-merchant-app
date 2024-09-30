@@ -4,6 +4,7 @@ import "./globals.css";
 import { AuthProvider } from "@/context/context";
 import { Toaster } from "sonner";
 import ReactQueryProvider from "@/lib/ReactQueryProvider";
+import { SnapshotProvider } from "@/context/SnapshotContext";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -27,7 +28,9 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <AuthProvider>
-          <ReactQueryProvider>{children}</ReactQueryProvider>
+          <ReactQueryProvider>
+            <SnapshotProvider>{children}</SnapshotProvider>
+          </ReactQueryProvider>
         </AuthProvider>
         <Toaster richColors />
       </body>
