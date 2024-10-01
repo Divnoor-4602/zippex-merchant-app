@@ -6,13 +6,17 @@ import {
   getDoc,
   getDocs,
   query,
+  updateDoc,
   where,
 } from "firebase/firestore";
 import { db } from "../firebase";
 import {
   GetMonthlyProductSalesProps,
+  GetOrdersByStatusProps,
   GetRecentOrdersProps,
   GetTotalSalesProps,
+  GetWeeklySales,
+  UpdateOrderStatusProps,
 } from "./shared.types";
 import { format, fromUnixTime } from "date-fns";
 
@@ -90,6 +94,68 @@ export async function getMonthlySales(params: GetTotalSalesProps) {
     }
 
     return monthlySalesArray;
+  } catch (error) {
+    console.log(error);
+    throw new Error("Failed to fetch data");
+  }
+}
+
+export async function getWeeklySales(params: GetWeeklySales) {
+  try {
+    const { merchantId, numWeeks } = params;
+
+    const orderRef = collection(db, "Orders");
+
+    const merchantQuery = query(
+      orderRef,
+      where("merchantId", "==", merchantId)
+    );
+
+    const querySnapshot = await getDocs(merchantQuery);
+
+    const orders = querySnapshot.docs.map((doc) => doc.data());
+
+    const currentDate = new Date();
+    const weeklySales: { [key: string]: number } = {};
+    const weeklySalesArray: { week: string; sales: number }[] = [];
+
+    for (let i = numWeeks! - 1; i >= 0; i--) {
+      const startOfWeek = new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth(),
+        currentDate.getDate() - currentDate.getDay() - i * 7
+      );
+      const endOfWeek = new Date(
+        startOfWeek.getFullYear(),
+        startOfWeek.getMonth(),
+        startOfWeek.getDate() + 6
+      );
+      const weekKey = `${format(startOfWeek, "dd MMM yyyy")} - ${format(
+        endOfWeek,
+        "dd MMM yyyy"
+      )}`;
+      weeklySales[weekKey] = 0;
+    }
+
+    for (const order of orders) {
+      const date = fromUnixTime(order.createdAt.seconds);
+      for (const week in weeklySales) {
+        const [start, end] = week.split(" - ").map((d) => new Date(d));
+        if (date >= start && date <= end) {
+          weeklySales[week] += 1;
+          break;
+        }
+      }
+    }
+
+    for (const week in weeklySales) {
+      weeklySalesArray.push({
+        week,
+        sales: weeklySales[week],
+      });
+    }
+
+    return weeklySalesArray;
   } catch (error) {
     console.log(error);
     throw new Error("Failed to fetch data");
@@ -214,5 +280,58 @@ export async function getRecentOrders(params: GetRecentOrdersProps) {
   } catch (error) {
     console.log(error);
     throw new Error("Failed to fetch data");
+  }
+}
+
+export async function getOrdersByStatus(params: GetOrdersByStatusProps) {
+  try {
+    const { orderStatus, merchantId } = params;
+
+    const orderRef = collection(db, "Orders");
+
+    const q = query(
+      orderRef,
+      where("orderStatus", "==", orderStatus),
+      where("merchantId", "==", merchantId)
+    );
+
+    const querySnapshot = await getDocs(q);
+
+    // get the customer data and add it to the order object
+
+    const orders = await Promise.all(
+      querySnapshot.docs.map(async (order) => {
+        const customerRef = doc(db, "Users", order.data().userId);
+
+        const customerDoc = await getDoc(customerRef);
+
+        const customerData = customerDoc.data();
+
+        return { ...order.data(), id: order.id, ...customerData };
+      })
+    );
+
+    console.log(orders);
+
+    return JSON.parse(JSON.stringify(orders));
+  } catch (error) {
+    console.log(error);
+
+    throw new Error("Failed to fetch data");
+  }
+}
+
+export async function updateOrderStatus(params: UpdateOrderStatusProps) {
+  try {
+    const { orderId, orderStatus, merchantId } = params;
+
+    const orderRef = doc(db, "Orders", orderId);
+
+    await updateDoc(orderRef, {
+      orderStatus,
+    });
+  } catch (error) {
+    console.log(error);
+    throw new Error("Failed to update order status");
   }
 }

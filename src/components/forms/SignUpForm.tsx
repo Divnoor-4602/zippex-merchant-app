@@ -36,16 +36,17 @@ import process from "process";
 import { toast } from "sonner";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/lib/firebase";
-
+import { Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { httpsCallable } from "firebase/functions";
+import { functions } from "@/lib/firebase";
 
 const formSchema = z
   .object({
     businessName: z.string().min(1, { message: "This field has to be filled" }),
     ownerName: z.string().min(1, { message: "This field has to be filled" }),
-    phoneNumber: z.string().regex(/^(?:\d{10}|\d{3}-\d{3}-\d{4})$/, {
-      message:
-        "Invalid Canadian phone number format. Use 'XXX-XXX-XXXX' or 'XXXXXXXXXX'.",
+    phoneNumber: z.string().regex(/^\(\d{3}\)\s\d{3}-\d{4}$/, {
+      message: "Invalid phone number format. Use '(XXX) XXX-XXXX'.",
     }),
 
     email: z
@@ -68,10 +69,23 @@ const formSchema = z
     }
   );
 
+const formatPhoneNumber = (phoneNumber: string): string => {
+  const numbers = phoneNumber.replace(/[^\d]/g, "");
+  const char = { 0: "(", 3: ") ", 6: "-" };
+  let formattedPhoneNumber = "";
+  for (let i = 0; i < numbers.length; i++) {
+    formattedPhoneNumber += (char as any)[i] || "";
+    formattedPhoneNumber += numbers[i];
+  }
+
+  return formattedPhoneNumber;
+};
+
 const SignUpForm = () => {
   // location autocomplete value
   const [businessAddress, setBusinessAddress] = useState<any>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const router = useRouter();
 
@@ -84,6 +98,7 @@ const SignUpForm = () => {
         return {
           ...prev,
           description: results[0].formatted_address,
+          country: "ca",
         };
       });
     });
@@ -98,6 +113,7 @@ const SignUpForm = () => {
               lat: lat,
               lng: lng,
             },
+            country: "ca",
           };
         })
       );
@@ -121,6 +137,7 @@ const SignUpForm = () => {
     setIsLoading(true);
 
     try {
+      // Create user with email and password in Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         values.email,
@@ -128,31 +145,62 @@ const SignUpForm = () => {
       );
       const user = userCredential.user;
 
-      const merchantCollection = collection(db, "merchants");
+      // Immediately sign in the user after creation
 
+      // Call Firebase Function to create a Stripe Express Connect account
+      const createExpressConnectAccount = httpsCallable(
+        functions,
+        "createExpressConnectAccount"
+      );
+      const stripeResponse = await createExpressConnectAccount({
+        email: values.email,
+        businessType: "business",
+        firstName: values.ownerName.split(" ")[0],
+        lastName: values.ownerName.split(" ")[1],
+        phoneNumber: values.phoneNumber.replace(/[^\d]/g, ""),
+      });
+
+      const { accountLinkUrl, stripeAccountId } = stripeResponse.data as {
+        accountLinkUrl: string;
+        stripeAccountId: string;
+      };
+
+      if (!accountLinkUrl) {
+        throw new Error("Stripe account link is undefined");
+      }
+
+      // Save the user's information and Stripe Account ID to Firestore
+      const merchantCollection = collection(db, "merchants");
       const merchantRef = doc(merchantCollection, user.uid);
       await setDoc(merchantRef, {
         businessName: values.businessName,
         ownerName: values.ownerName,
-        phoneNumber: values.phoneNumber,
+        phoneNumber: values.phoneNumber.replace(/[^\d]/g, ""),
         email: values.email,
+        merchantConnectId: stripeAccountId,
         businessAddress: businessAddress,
+        stripeAccountId: stripeAccountId,
         isVerified: false,
         isOnBoarded: false,
         uid: user.uid,
         createdAt: Date.now(),
+        onboardingStep: 0,
       });
 
-      setIsLoading(false);
-      form.reset();
-      toast.success("Account created successfully!");
-      toast.info("Please verify your email to continue");
-      router.push("/verify-email");
-      //!Recheck this once
-      // router.push("/business-on-boarding");
+      // Notify the user to complete Stripe setup in the new tab
+      toast.success(
+        "Please complete your Stripe onboarding in the new tab. Once completed, return here to finish."
+      );
+
+      // Open Stripe in a new tab for the user to complete onboarding
+      window.open(accountLinkUrl, "_blank");
+
+      // Redirect the user to a waiting page or dashboard
+      router.push("/business-on-boarding/business-document-on-boarding");
     } catch (error) {
-      console.log(error);
-      toast.error("Cannot sign in right now!, Please try again later");
+      console.error(error);
+      toast.error("Cannot sign up right now! Please try again later.");
+    } finally {
       setIsLoading(false);
     }
   };
@@ -222,12 +270,19 @@ const SignUpForm = () => {
                   <FormItem>
                     <FormControl className="mt-2.5">
                       <Input
-                        placeholder="Phone number"
+                        placeholder="(XXX) XXX-XXXX"
                         {...field}
                         className="no-focus bg-gray-300 border-none"
+                        maxLength={14} // Adjust the length for formatted phone number
+                        onChange={(e) => {
+                          const formattedValue = formatPhoneNumber(
+                            e.target.value
+                          ); // Format the input
+                          field.onChange(formattedValue); // Update the field value
+                        }}
+                        value={field.value} // Make sure the value is controlled
                       />
                     </FormControl>
-
                     <FormMessage className="w-[75%]" />
                   </FormItem>
                 )}
@@ -236,7 +291,7 @@ const SignUpForm = () => {
               <GooglePlacesAutocomplete
                 apiKey={process.env.GOOGLE_PLACES_AUTOCOMPLETE_API_KEY}
                 selectProps={{
-                  placeholder: "Business address",
+                  placeholder: "Business address (Canada only)",
                   onChange: (e) => handlePlaceChanged(e),
 
                   styles: {
@@ -285,6 +340,9 @@ const SignUpForm = () => {
                     }),
                   },
                 }}
+                autocompletionRequest={{
+                  componentRestrictions: { country: "ca" },
+                }}
               />
               {/* email */}
               <FormField
@@ -309,29 +367,64 @@ const SignUpForm = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormControl className="mt-2.5">
-                      <Input
-                        placeholder="Password"
-                        type="password"
-                        {...field}
-                        className="no-focus bg-gray-300 border-none"
-                      />
+                      <div className="relative">
+                        <Input
+                          placeholder="Password"
+                          type={showPassword ? "text" : "password"}
+                          {...field}
+                          className="no-focus bg-gray-300 border-none pr-10"
+                        />
+                        <button
+                          type="button"
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                          onClick={() => setShowPassword(!showPassword)}
+                          aria-label={
+                            showPassword ? "Hide password" : "Show password"
+                          }
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-5 w-5 text-gray-500" />
+                          ) : (
+                            <Eye className="h-5 w-5 text-gray-500" />
+                          )}
+                        </button>
+                      </div>
                     </FormControl>
-
                     <FormMessage className="w-[75%]" />
                   </FormItem>
                 )}
               />
+
               <FormField
                 control={form.control}
                 name="confirmPassword"
                 render={({ field }) => (
                   <FormItem>
                     <FormControl className="mt-2.5">
-                      <Input
-                        placeholder="Confirm Password"
-                        {...field}
-                        className="no-focus bg-gray-300 border-none"
-                      />
+                      <div className="relative">
+                        <Input
+                          placeholder="Confirm Password"
+                          type={showPassword ? "text" : "password"}
+                          {...field}
+                          className="no-focus bg-gray-300 border-none pr-10"
+                        />
+                        <button
+                          type="button"
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                          onClick={() => setShowPassword(!showPassword)}
+                          aria-label={
+                            showPassword
+                              ? "Hide confirm password"
+                              : "Show confirm password"
+                          }
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-5 w-5 text-gray-500" />
+                          ) : (
+                            <Eye className="h-5 w-5 text-gray-500" />
+                          )}
+                        </button>
+                      </div>
                     </FormControl>
                     <FormMessage className="w-[75%]" />
                   </FormItem>

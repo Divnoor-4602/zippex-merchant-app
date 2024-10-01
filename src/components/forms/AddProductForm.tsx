@@ -37,6 +37,7 @@ import { auth, db, storage } from "@/lib/firebase";
 import { toast } from "sonner";
 import { useMutation } from "@tanstack/react-query";
 import { addProduct } from "@/lib/actions/product.actions";
+import { Skeleton } from "../ui/skeleton";
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "This field has to be filled" }),
@@ -80,7 +81,7 @@ const AddProductForm = () => {
   });
 
   // mutation to add product in the inventory
-  const { mutate: server_addProduct } = useMutation({
+  const { mutate: server_addProduct, isPending } = useMutation({
     mutationFn: async ({
       values,
       imageUrl,
@@ -132,6 +133,24 @@ const AddProductForm = () => {
   const handleProductImageUrl = (file: any) => {
     setProductImageUrl((prev: any) => file);
   };
+
+  if (isPending) {
+    return (
+      <div className="w-full">
+        <div className="flex items-center gap-4">
+          <Skeleton className="size-[35px]" />
+          <h1 className="text-xl font-semibold">Add Product</h1>
+        </div>
+        <Skeleton className="h-[30px] my-4 w-[100px]" />
+        <section className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-4">
+          <Skeleton className="col-span-2 h-[220px]" />
+          <Skeleton className=" h-[220px]" />
+          <Skeleton className="col-span-2 h-[250px]" />
+          <Skeleton className=" h-[250px]" />
+        </section>
+      </div>
+    );
+  }
 
   return (
     <>

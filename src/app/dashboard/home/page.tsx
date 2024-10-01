@@ -59,6 +59,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { ChevronLeftIcon, ChevronRightIcon } from "@radix-ui/react-icons";
 import NewOrderAlert from "@/components/shared/NewOrderAlert";
+import useOrdersListener from "@/lib/hooks/useOrdersListener";
 
 const Page = () => {
   const merchant = auth.currentUser;
@@ -71,6 +72,12 @@ const Page = () => {
   const currentYear = date.getFullYear();
 
   const currentDate = format(new Date(), "dd MMM");
+
+  const {
+    data: allOrders,
+    isLoading: allOrdersLoading,
+    isError: allOrdersError,
+  } = useOrdersListener();
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["totalRevenue"],

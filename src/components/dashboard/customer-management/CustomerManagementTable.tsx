@@ -47,7 +47,9 @@ export function CustomerManagementTable<TData, TValue>({
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
-  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [sorting, setSorting] = React.useState<SortingState>([
+    { id: "lastOrderDate", desc: true },
+  ]);
 
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});

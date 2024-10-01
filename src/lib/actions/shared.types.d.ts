@@ -12,6 +12,11 @@ export interface GetTotalSalesProps {
   numMonths?: number;
 }
 
+export interface GetWeeklySales {
+  merchantId: string;
+  numWeeks?: number;
+}
+
 export interface GetRecentOrdersProps {
   merchantId: string;
   numMonths: number;
@@ -63,4 +68,15 @@ export interface GetMonthlyProductSalesProps {
   merchantId: string;
   productId: string;
   numMonths: number;
+}
+
+export interface UpdateOrderStatusProps {
+  orderId: string;
+  orderStatus: string;
+  merchantId: string;
+}
+
+export interface GetOrdersByStatusProps {
+  orderStatus: string;
+  merchantId: string;
 }

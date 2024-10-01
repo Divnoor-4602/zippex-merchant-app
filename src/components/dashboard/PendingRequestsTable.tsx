@@ -12,7 +12,6 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
 } from "@tanstack/react-table";
-
 import {
   Table,
   TableBody,
@@ -22,8 +21,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import React from "react";
-import { Input } from "@/components/ui/input";
-import TableFilter from "../../shared/filters/TableFilter";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -32,31 +29,29 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "../../ui/button";
+import { Button } from "../ui/button";
 import { SlidersHorizontal } from "lucide-react";
-import { DataTablePagination } from "../../shared/Pagination";
+import { DataTablePagination } from "../shared/Pagination";
+import { useRouter } from "next/navigation";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
 }
 
-export function DataTable<TData, TValue>({
+export function PendingRequestsTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
-  const [sorting, setSorting] = React.useState<SortingState>([
-    {
-      id: "date",
-      desc: true,
-    },
-  ]);
+  const [sorting, setSorting] = React.useState<SortingState>([]);
 
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
+
+  const router = useRouter();
 
   const table = useReactTable({
     data,
@@ -75,66 +70,15 @@ export function DataTable<TData, TValue>({
     },
   });
 
-  const statusFilterList = [
-    {
-      label: "Complete",
-      filter: "complete",
-      color: "bg-green-500",
-    },
-    {
-      label: "Pending",
-      filter: "pending",
-      color: "bg-yellow-400",
-    },
-    {
-      label: "Accepted",
-      filter: "accepted",
-      color: "bg-blue-600",
-    },
-    { label: "Arrived", filter: "arrived", color: "bg-gray-600" },
-    { label: "Reached", filter: "reached", color: "bg-red-500" },
-
-    { label: "Rejected", filter: "rejected", color: "bg-red-600" },
-    { label: "Cancelled", filter: "cancelled", color: "bg-red-600" },
-    { label: "In Review", filter: "inreview", color: "bg-amber-600" },
-  ];
-
   return (
     <>
       {/* menu bar */}
-      <div className="flex mb-4 gap-2">
-        {/* search by customer name */}
-        <Input
-          placeholder="Customer name"
-          value={
-            (table.getColumn("customer")?.getFilterValue() as string) ?? ""
-          }
-          onChange={(event) =>
-            table.getColumn("customer")?.setFilterValue(event.target.value)
-          }
-          className="max-w-[250px] h-[30px] no-focus"
-        />
-
-        {/* filter by status */}
-        <TableFilter
-          filterList={statusFilterList}
-          valueEvent={(value: string) => {
-            table.getColumn("status")?.setFilterValue(value);
-          }}
-          text={"Status"}
-          value={(table.getColumn("status")?.getFilterValue() as string) ?? ""}
-          clearAllFilters={table.resetColumnFilters}
-          clearCurrentFilter={() => {
-            table.getColumn("status")?.setFilterValue("");
-          }}
-        />
-
-        {/* filter columns */}
+      <div className="flex mb-4 gap-2 flex-wrap">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               variant="outline"
-              className="ml-auto h-[30px] text-xs font-normal"
+              className=" h-[30px] text-xs font-normal ml-auto"
             >
               <SlidersHorizontal className="size-4 mr-2" />
               View
@@ -163,30 +107,8 @@ export function DataTable<TData, TValue>({
               })}
           </DropdownMenuContent>
         </DropdownMenu>
-
-        {/* filter by type */}
-        {/* <TableFilter
-          text={}
-          value={(table.getColumn("type")?.getFilterValue() as string) ?? ""}
-          valueEvent={(event: any) => {
-            console.log(event);
-
-            table.getColumn("type")?.setFilterValue(event);
-          }}
-          clearCurrentFilter={() => {
-            table.getColumn("type")?.setFilterValue("");
-          }}
-          clearAllFilters={() => {
-            table.resetColumnFilters();
-          }}
-        /> */}
       </div>
       <div className="rounded-md border">
-        {/* filter by type */}
-        {/* date sort asc desc */}
-        {/* amount sort asc desc  */}
-        {/* view columns */}
-
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
