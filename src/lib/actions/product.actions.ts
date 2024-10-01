@@ -168,3 +168,67 @@ export async function deleteProduct(props: DeleteProductProps) {
     throw new Error("An error occurred while deleting the product");
   }
 }
+
+// Replace with your Shopify store domain and access token
+const shopifyStoreDomain = "18fc98-bf.myshopify.com";
+const storefrontAccessToken = "b3706f23c15a6a857d3a372aebfd64bb";
+
+// Function to fetch all products
+async function fetchAllProducts() {
+  const query = `
+    {
+      products(first: 100) {
+        edges {
+          node {
+            id
+            title
+            description
+            images(first: 5) {
+              edges {
+                node {
+                  src
+                  altText
+                }
+              }
+            }
+            variants(first: 5) {
+              edges {
+                node {
+                  title
+                  priceV2 {
+                    amount
+                    currencyCode
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }`;
+
+  const url = `https://${shopifyStoreDomain}/api/2023-07/graphql.json`;
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Shopify-Storefront-Access-Token": storefrontAccessToken,
+    },
+    body: JSON.stringify({ query }),
+  });
+
+  const responseBody = await response.json();
+  return responseBody.data.products.edges;
+}
+
+// Example usage:
+fetchAllProducts()
+  .then((products) => {
+    products.forEach((product: { node: { title: any } }) => {
+      console.log(product.node); // Log product title
+    });
+  })
+  .catch((error) => {
+    console.error("Error fetching products:", error);
+  });

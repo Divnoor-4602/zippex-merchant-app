@@ -30,6 +30,8 @@ import {
   CirclePercentIcon,
   Clock7Icon,
   GhostIcon,
+  ChevronsLeftIcon,
+  ChevronsRightIcon,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
@@ -46,8 +48,8 @@ import {
   getRecentOrders,
   getTotalSales,
 } from "@/lib/actions/order.actions";
-import { capitalizeFirstLetter } from "@/lib/utils";
-import React from "react";
+import { capitalizeFirstLetter, cn } from "@/lib/utils";
+import React, { useEffect, useState } from "react";
 
 import { getActiveDiscounts } from "@/lib/actions/discount.actions";
 import { format } from "date-fns";
@@ -55,6 +57,7 @@ import { format } from "date-fns";
 import HomeLoading from "@/components/skeletons/HomeLoading";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { ChevronLeftIcon, ChevronRightIcon } from "@radix-ui/react-icons";
 import NewOrderAlert from "@/components/shared/NewOrderAlert";
 import useOrdersListener from "@/lib/hooks/useOrdersListener";
 
@@ -62,6 +65,8 @@ const Page = () => {
   const merchant = auth.currentUser;
   const merchantId = merchant!.uid;
 
+  const [pageNumber, setPageNumber] = useState(1);
+  const [recentOrdersPageContent, setRecentOrdersPageContent] = useState([]);
   const date = new Date();
   const currentMonth = months[date.getMonth()];
   const currentYear = date.getFullYear();
@@ -167,8 +172,8 @@ const Page = () => {
         merchantId,
         numMonths: 1,
       });
-
       recentOrders.reverse();
+      console.log(recentOrders);
 
       // get the number of active discount codes
 
@@ -186,6 +191,16 @@ const Page = () => {
     },
     refetchInterval: 6000,
   });
+
+  useEffect(() => {
+    const currentOrders = data?.recentOrders?.slice(
+      (pageNumber - 1) * 5,
+      data?.recentOrders[pageNumber * 5]
+        ? pageNumber * 5
+        : data?.recentOrders.length
+    );
+    setRecentOrdersPageContent(currentOrders);
+  }, [pageNumber, data?.recentOrders]);
 
   let chartData: any = [];
   for (let i = 0; i < date.getMonth() + 1; i++) {
@@ -218,9 +233,94 @@ const Page = () => {
     );
   }
 
+  //Pagination controller setup
+  const CATEGORIES_PER_PAGE = 5;
+  const START_PAGE = 0;
+  const END_PAGE =
+    data?.recentOrders?.length &&
+    Math.ceil(data?.recentOrders?.length / CATEGORIES_PER_PAGE);
+  const PaginationStart = () => {
+    const startPages = [];
+    for (let i = START_PAGE; i < START_PAGE + 6 && i < END_PAGE; i++) {
+      startPages.push(i + 1);
+    }
+    return (
+      <>
+        {startPages.map((page) => (
+          <Button
+            key={page}
+            onClick={() => setPageNumber(page)}
+            className={cn("bg-white text-black hover:bg-slate-200", {
+              "font-extrabold": page === pageNumber,
+            })}
+          >
+            {page}
+          </Button>
+        ))}
+      </>
+    );
+  };
+
+  const PaginationEnd = () => {
+    const endPages = [];
+    if (END_PAGE) {
+      for (let i = END_PAGE - 6; i < END_PAGE; i++) {
+        if (i < 1) {
+          continue;
+        }
+        endPages.push(i + 1);
+      }
+    }
+    return (
+      <>
+        {endPages.map((page) => (
+          <Button
+            key={page}
+            onClick={() => setPageNumber(page)}
+            className={cn("bg-white text-black hover:bg-slate-200", {
+              "font-extrabold": page === pageNumber,
+            })}
+          >
+            {page}
+          </Button>
+        ))}
+      </>
+    );
+  };
+
+  const PaginationMid = () => {
+    const midPages = [];
+    for (let i = pageNumber - 4; i < pageNumber + 3; i++) {
+      midPages.push(i + 1);
+    }
+    return (
+      <>
+        {midPages.map((page) => (
+          <Button
+            key={page}
+            onClick={() => setPageNumber(page)}
+            className={cn("bg-white text-black hover:bg-slate-200", {
+              "font-extrabold": page === pageNumber,
+            })}
+          >
+            {page}
+          </Button>
+        ))}
+      </>
+    );
+  };
+  const PaginationComponent =
+    pageNumber < 4 ? (
+      <PaginationStart />
+    ) : pageNumber >= 4 && pageNumber <= END_PAGE! - 3 ? (
+      <PaginationMid />
+    ) : (
+      <PaginationEnd />
+    );
+
   return (
     <>
-      <main className="grid md:grid-cols-4 sm:grid-cols-2 grid-cols-1 gap-4 max-md:mb-6">
+      <main className="grid md:grid-cols-4 sm:grid-cols-2 grid-cols-1 gap-4 max-md:mb-6 pb-10">
         {/* total revenue */}
         <DashboardCard
           title="Total Revenue"
@@ -339,40 +439,86 @@ const Page = () => {
           </CardFooter>
         </Card>
         {/* Recent orders */}
-        <Card className="sm:col-span-2">
-          <CardHeader className="flex flex-col">
-            <CardTitle className="flex items-center justify-between w-full">
-              Recent Orders <History className="text-muted-foreground size-4" />
-            </CardTitle>
-            <CardDescription>
-              You got {data?.recentOrders.length} orders this month
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col w-full gap-6 flex-wrap">
-              {data?.recentOrders.map((order: any, index: number) => {
-                return (
-                  <React.Fragment key={order.email + index + order.subtotal}>
-                    <div className="flex justify-between items-center">
-                      <div className="flex gap-3 items-center">
-                        <div className="size-6 bg-gradient-to-r from-brandblue to-brandlightblue rounded-full" />
-                        <div className="flex flex-col ">
-                          <div className="text-sm font-medium">
-                            {capitalizeFirstLetter(order.firstName)}{" "}
-                            {capitalizeFirstLetter(order.lastName)}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {order.email}
+        <Card className="sm:col-span-2 flex flex-col justify-between h-full">
+          <div>
+            <CardHeader className="flex flex-col">
+              <CardTitle className="flex items-center justify-between w-full">
+                Recent Orders{" "}
+                <History className="text-muted-foreground size-4" />
+              </CardTitle>
+              <CardDescription>
+                You got {data?.recentOrders?.length} orders this month
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col w-full gap-6 flex-wrap">
+                {recentOrdersPageContent?.map((order: any, index: number) => {
+                  return (
+                    <React.Fragment key={order.email + index + order.subtotal}>
+                      <div className="flex justify-between items-center">
+                        <div className="flex gap-3 items-center">
+                          <div className="size-6 bg-gradient-to-r from-brandblue to-brandlightblue rounded-full" />
+                          <div className="flex flex-col ">
+                            <div className="text-sm font-medium">
+                              {capitalizeFirstLetter(order.firstName)}{" "}
+                              {capitalizeFirstLetter(order.lastName)}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {order.email}
+                            </div>
                           </div>
                         </div>
+                        <div className="font-semibold ">+{order.subtotal}$</div>
                       </div>
-                      <div className="font-semibold ">+{order.subtotal}$</div>
-                    </div>
-                  </React.Fragment>
-                );
-              })}
-            </div>
-          </CardContent>
+                    </React.Fragment>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </div>
+          <div className="flex gap-2 items-center justify-center w-full py-4">
+            {!isLoading && (
+              <div className="flex w-full justify-center">
+                {pageNumber === 1 ? (
+                  ""
+                ) : (
+                  <div className="flex items-center justify-start">
+                    <Button
+                      className="bg-white p-1 text-black hover:bg-slate-200"
+                      onClick={() => setPageNumber(1)}
+                    >
+                      <ChevronsLeftIcon className="size-4" />
+                    </Button>
+                    <Button
+                      className="bg-white p-1 text-black hover:bg-slate-200"
+                      onClick={() => setPageNumber(pageNumber - 1)}
+                    >
+                      <ChevronLeftIcon className="size-4" />
+                    </Button>
+                  </div>
+                )}
+                {PaginationComponent}
+                {data?.recentOrders?.length && pageNumber === END_PAGE ? (
+                  ""
+                ) : (
+                  <div className="flex items-center justify-start">
+                    <Button
+                      className="bg-white p-1 text-black hover:bg-slate-200"
+                      onClick={() => setPageNumber(pageNumber + 1)}
+                    >
+                      <ChevronRightIcon className="size-4" />
+                    </Button>
+                    <Button
+                      className="bg-white p-1 text-black hover:bg-slate-200"
+                      onClick={() => setPageNumber(END_PAGE!)}
+                    >
+                      <ChevronsRightIcon className="size-4" />
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </Card>
       </main>
     </>
