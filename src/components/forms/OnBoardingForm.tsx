@@ -112,7 +112,11 @@ const OnBoardingForm = () => {
               onSubmit={form.handleSubmit(onSubmit)}
               className="space-y-6 flex flex-col"
             >
-              <UploadButton />
+              <UploadButton
+                handleLogoUploaded={function (url: string): void {
+                  throw new Error("Function not implemented.");
+                }}
+              />
               <FormField
                 control={form.control}
                 name="businessType"
