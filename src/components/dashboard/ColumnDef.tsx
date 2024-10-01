@@ -811,7 +811,7 @@ export const pendingRequestsColumns: ColumnDef<any>[] = [
               onClick={async () => {
                 await updateOrderStatus({
                   orderId: data.id,
-                  status: "accepted",
+                  orderStatus: "Accepted",
                   merchantId: data.merchantId,
                 });
                 data.queryClient.invalidateQueries("pending-orders");
@@ -825,7 +825,7 @@ export const pendingRequestsColumns: ColumnDef<any>[] = [
               onClick={async () => {
                 await updateOrderStatus({
                   orderId: data.id,
-                  status: "rejected",
+                  orderStatus: "Rejected",
                   merchantId: data.merchantId,
                 }),
                   data.queryClient.invalidateQueries("pending-orders");
