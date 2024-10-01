@@ -101,7 +101,7 @@ const Page = () => {
     },
   });
 
-  if (isLoading || allOrdersLoading) {
+  if (isLoading || allOrdersLoading || !currentOrder) {
     return <div>Loading...</div>;
   }
 

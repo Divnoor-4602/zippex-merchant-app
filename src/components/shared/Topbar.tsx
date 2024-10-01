@@ -13,6 +13,8 @@ import React from "react";
 import { capitalizeFirstLetter } from "@/lib/utils";
 import { Badge } from "../ui/badge";
 import PendingRequests from "./PendingRequests";
+import { Button } from "../ui/button";
+import Link from "next/link";
 
 const Topbar = () => {
   const router = useRouter();
@@ -43,6 +45,15 @@ const Topbar = () => {
         </Breadcrumb>
         <div className="flex items-center gap-4 self-end">
           {/* in review -> pending on accepting the orders */}
+          {/* Implement Shopify Connect in next version */}
+          {/* <Link href="/connect-shopify">
+            <Button
+              className="h-[30px] text-xs bg-green-600"
+              onClick={() => {}}
+            >
+              Connect Shopify
+            </Button>
+          </Link> */}
           <PendingRequests />
           <ProfileDropdown />
         </div>
