@@ -13,9 +13,7 @@ const ConnectShopifyPage = () => {
   //   const shop = "merchant-shop-name.myshopify.com"; // Extract this from the merchant
   const clientId = process.env.NEXT_PUBLIC_SHOPIFY_API_KEY; // From Shopify Partner dashboard
   const scopes = "read_products"; // You only need product read scope
-  const redirectUri = encodeURIComponent(
-    "https://merchant.zippex.app/api/shopify"
-  ); // Your app's callback URL
+  const redirectUri = encodeURIComponent("http://localhost:3000/shopify"); // Your app's callback URL
 
   const handleSubmit = () => {
     console.log(shop.current?.value);

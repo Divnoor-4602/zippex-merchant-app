@@ -181,7 +181,7 @@ const InventoryAnalytics = ({
           title="Least Selling Items"
           key={"least-selling-item"}
           layoutId={"least-selling-item"}
-          badgeValue={`${quantitySold?.toReversed()[0]?.quantity} unit(s) sold`}
+          badgeValue={`${quantitySold[0]?.quantity} unit(s) sold`}
         />
       </div>
       <div className="w-full flex gap-5 max-lg:flex-col">
