@@ -45,15 +45,14 @@ const Topbar = () => {
         </Breadcrumb>
         <div className="flex items-center gap-4 self-end">
           {/* in review -> pending on accepting the orders */}
-          {/* Implement Shopify Connect in next version */}
-          {/* <Link href="/connect-shopify">
+          <Link href="/connect-shopify">
             <Button
               className="h-[30px] text-xs bg-green-600"
               onClick={() => {}}
             >
               Connect Shopify
             </Button>
-          </Link> */}
+          </Link>
           <PendingRequests />
           <ProfileDropdown />
         </div>
