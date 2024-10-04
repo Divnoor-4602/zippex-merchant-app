@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
 
   if (data.access_token) {
     const accessToken = data.access_token;
-
+    console.log("working");
     // You can save the access_token for future use (e.g., in your database)
     // Redirect to the inventory sync page after obtaining access_token
     return NextResponse.redirect(
