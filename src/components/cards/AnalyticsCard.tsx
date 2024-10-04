@@ -11,6 +11,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const AnalyticsCard = ({
   openCondition,
