@@ -12,7 +12,6 @@ const ConnectShopifyPage = () => {
   const shop = useRef<HTMLInputElement>(null);
   //   const shop = "merchant-shop-name.myshopify.com"; // Extract this from the merchant
   const clientId = process.env.NEXT_PUBLIC_SHOPIFY_CLIENT_ID; // From Shopify Partner dashboard
-  // const clientId = "071f9a0a113571749ba8ffe1a9232411";
   const scopes = process.env.NEXT_PUBLIC_SHOPIFY_SCOPES!; // You only need product read scope
   // const redirectUri = process.env.NEXT_PUBLIC_SHOPIFY_REDIRECT_URI!; // Your app's callback URL
   const redirectUri = "https://merchant.zippex.app/api/shopify";
@@ -20,7 +19,7 @@ const ConnectShopifyPage = () => {
     console.log(shop.current?.value, clientId, redirectUri);
     if (shop.current?.value && clientId && redirectUri) {
       const authorizationUrl = encodeURI(
-        `https://${shop.current.value.trim()}.myshopify.com/admin/oauth/authorize?client_id=${clientId!}&scope=${scopes}&redirect_uri=${"https%3A%2F%2F984d09-79.myshopify.com%2Fadmin%2Foauth%2Fauthorize%3Fclient_id%3Dda058359c4fce932088e978d0a5bc7f7%26scope%3Dread_products%26redirect_uri%3Dhttps%3A%2F%2Fmerchant.zippex.app%2Fapi%2Fshopify"}`
+        `https://${shop.current.value.trim()}.myshopify.com/admin/oauth/authorize?client_id=${clientId!}&scope=${scopes}&redirect_uri=${"redirectUri"}`
       );
       console.log(authorizationUrl);
       router.push(authorizationUrl);
