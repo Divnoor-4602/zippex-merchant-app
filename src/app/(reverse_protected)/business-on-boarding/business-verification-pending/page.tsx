@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/card";
 import React from "react";
 import Image from "next/image";
-import merchantLogo from "../../../../public/images/logo-merchant.png";
+import merchantLogo from "../../../../../public/images/logo-merchant.png";
 import { useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
 import { signOut } from "firebase/auth";
