@@ -12,6 +12,7 @@ import { Button } from "../ui/button";
 import { auth } from "@/lib/firebase";
 import { User } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { signOut } from "firebase/auth";
 
 const ProfileDropdown = () => {
   const user = auth.currentUser;
@@ -37,7 +38,11 @@ const ProfileDropdown = () => {
           <DropdownMenuItem onClick={() => router.push("/dashboard/settings")}>
             Settings
           </DropdownMenuItem>
-          <DropdownMenuItem>Log out</DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => signOut(auth).then(() => router.push("/sign-in"))}
+          >
+            Sign out
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </>

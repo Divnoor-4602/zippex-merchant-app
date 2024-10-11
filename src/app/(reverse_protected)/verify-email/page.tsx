@@ -4,7 +4,7 @@ import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { auth } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
-import merchantLogo from "../../../public/images/logo-merchant.png";
+import merchantLogo from "../../../../public/images/logo-merchant.png";
 import Image from "next/image";
 import { sendEmailVerification } from "firebase/auth";
 import { toast } from "sonner";

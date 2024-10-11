@@ -4,6 +4,10 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");
   const shop = searchParams.get("shop");
+  console.log("running");
+
+  console.log(code);
+  console.log(shop);
 
   if (!code || !shop) {
     return NextResponse.json(
@@ -35,9 +39,9 @@ export async function GET(request: NextRequest) {
 
     // You can save the access_token for future use (e.g., in your database)
     // Redirect to the inventory sync page after obtaining access_token
-    return NextResponse.redirect(
-      `/api/shopify/inventory?shop=${shop}&access_token=${accessToken}`
-    );
+    // return NextResponse.redirect(
+    //   `/api/shopify/inventory?shop=${shop}&access_token=${accessToken}`
+    // );
   } else {
     return NextResponse.json(
       { error: "Failed to obtain access token" },

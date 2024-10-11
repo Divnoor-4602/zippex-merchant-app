@@ -11,6 +11,9 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Zippex",
   description: "Just zippex it",
+  icons: {
+    icon: "../../public/images/zippex-box.svg",
+  },
 };
 
 export default function RootLayout({
