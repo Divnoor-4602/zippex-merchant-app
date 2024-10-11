@@ -14,7 +14,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-
+import { calculatePercentageChange } from "@/lib/utils";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 import { auth, db } from "@/lib/firebase";
 import { months } from "@/constants";
@@ -104,17 +104,10 @@ const Page = () => {
 
       // percentage increase or decrease in revenue
       // Calculate the percentage increase or decrease, handling the zero case
-      let revenuePercentage;
-      if (prevtwoMonthsRevenue[0].revenue === 0) {
-        if (prevtwoMonthsRevenue[1].revenue > 0) {
-          revenuePercentage = revenueDifference / 1; // Consider it as infinite growth
-        } else {
-          revenuePercentage = 0; // No change if both months have zero revenue
-        }
-      } else {
-        revenuePercentage =
-          (revenueDifference / prevtwoMonthsRevenue[0].revenue) * 100;
-      }
+      let revenuePercentage = calculatePercentageChange(
+        prevtwoMonthsRevenue[1].revenue,
+        prevtwoMonthsRevenue[0].revenue
+      );
 
       let revenueTrajectory;
       if (revenueDifference > 0) {
@@ -140,19 +133,13 @@ const Page = () => {
         numMonths: 2,
       });
 
-      let salesDifference = monthlySales[1].sales - monthlySales[0].sales;
-      let salesPercentage;
+      console.log(monthlySales);
 
-      // Calculate the percentage increase or decrease, handling the zero case
-      if (monthlySales[0].sales === 0) {
-        if (monthlySales[1].sales > 0) {
-          salesPercentage = salesDifference / 1; // Consider it as infinite growth
-        } else {
-          salesPercentage = 0; // No change if both months have zero revenue
-        }
-      } else {
-        salesPercentage = (salesDifference / monthlySales[0].sales) * 100;
-      }
+      let salesDifference = monthlySales[1].sales - monthlySales[0].sales;
+      let salesPercentage = calculatePercentageChange(
+        monthlySales[1].sales,
+        monthlySales[0].sales
+      );
 
       let salesTrajectory;
       if (salesDifference > 0) {
@@ -326,6 +313,7 @@ const Page = () => {
           title="Total Revenue"
           badgeValue={`${data?.totalRevenueValues.percentage}%`}
           increase={data?.totalRevenueValues.trajectory ?? false}
+          timeFrame="month"
           currency={true}
           Icon={() => <DollarSign className="h-4 w-4 text-muted-foreground" />}
           progressValue={data?.totalRevenueValues.percentage ?? 0}
@@ -341,7 +329,9 @@ const Page = () => {
           title="Total Orders"
           badgeValue={`${data?.totalSalesValues.percentage}%`}
           increase={data?.totalSalesValues.trajectory ?? false}
+          timeFrame="month"
           currency={false}
+          isNumerical={true}
           Icon={() => (
             <ShoppingCart className="h-4 w-4 text-muted-foreground" />
           )}

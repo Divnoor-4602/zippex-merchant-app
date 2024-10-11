@@ -23,6 +23,8 @@ interface DashboardCardProps {
   value: number;
   increase: boolean;
   currency: boolean;
+  isNumerical?: boolean;
+  timeFrame?: string;
 }
 
 export default function DashboardCard({
@@ -31,8 +33,10 @@ export default function DashboardCard({
   progressValue,
   badgeValue,
   value,
+  timeFrame,
   increase,
   currency,
+  isNumerical,
   Icon,
 }: DashboardCardProps) {
   return (
@@ -43,7 +47,13 @@ export default function DashboardCard({
       </CardHeader>
 
       <CardContent>
-        {currency ? (
+        {isNumerical ? (
+          <>
+            <div className="text-2xl md:text-3xl font-bold truncate">
+              {value}
+            </div>
+          </>
+        ) : currency ? (
           <div className="text-2xl md:text-3xl font-bold truncate">
             ${value}
           </div>
@@ -60,13 +70,23 @@ export default function DashboardCard({
         {increase ? (
           <>
             <Badge variant={badgeVariant} className="mt-3">
-              +{badgeValue} from last month
+              +{badgeValue} from last{" "}
+              {timeFrame === "month"
+                ? "month"
+                : timeFrame === "week"
+                ? "week"
+                : "year"}
             </Badge>
           </>
         ) : (
           <>
             <Badge variant={badgeVariant} className="mt-3">
-              -{badgeValue} from last month
+              -{badgeValue} from last{" "}
+              {timeFrame === "month"
+                ? "month"
+                : timeFrame === "week"
+                ? "week"
+                : "year"}
             </Badge>
           </>
         )}

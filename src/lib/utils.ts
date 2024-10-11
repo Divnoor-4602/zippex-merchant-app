@@ -154,3 +154,15 @@ export const determineStatusColor = (status: string) => {
       break;
   }
 };
+
+export const calculatePercentageChange = (
+  prevValue: number,
+  currValue: number
+) => {
+  const difference = currValue - prevValue;
+  if (prevValue === 0) {
+    return currValue === 0 ? 0 : 100;
+  } else {
+    return (difference / prevValue) * 100;
+  }
+};

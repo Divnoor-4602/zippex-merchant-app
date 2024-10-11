@@ -8,6 +8,7 @@ import TotalOrders from "@/components/dashboard/orders/TotalOrders";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { auth, db } from "@/lib/firebase";
 import {
+  calculatePercentageChange,
   capitalizeFirstLetter,
   determineStatusColor,
   getDayRange,
@@ -60,6 +61,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
   getMonthlySales,
   getRecentOrders,
+  getTotalSales,
   getWeeklySales,
 } from "@/lib/actions/order.actions";
 
@@ -76,8 +78,6 @@ const Page = () => {
 
   const merchant = auth.currentUser;
   const merchantId = merchant!.uid;
-
-  console.log(merchantId);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["orders"],
@@ -108,41 +108,48 @@ const Page = () => {
         numMonths: 2,
       });
 
-      console.log(monthlyRevenue);
-
       // get monthly sales according to the current month and calculate the inc/dec in sales
       const monthlySales = await getMonthlySales({
         merchantId,
         numMonths: 2,
       });
 
+      // get total sales
+      const totalSales = await getTotalSales({
+        merchantId,
+      });
+
       const previousMonthSales = monthlySales[0].sales;
       const currentMonthSales = monthlySales[1].sales;
 
-      const percentageDifference =
-        ((currentMonthSales - previousMonthSales) / previousMonthSales) * 100;
+      const percentageDifference = calculatePercentageChange(
+        previousMonthSales,
+        currentMonthSales
+      );
+
+      let monthlyRevenueTrajectory;
+      if (percentageDifference > 0) {
+        monthlyRevenueTrajectory = true;
+      } else {
+        monthlyRevenueTrajectory = false;
+      }
 
       const monthlyRevenueObject = {
         numMonthlyRevenue: monthlyRevenue[1].revenue,
         monthlyRevenueDifference:
           monthlyRevenue[1].revenue - monthlyRevenue[0].revenue,
-        monthlyRevenuePercentage: percentageDifference,
-        monthlyRevenueTrajectory: percentageDifference > 0,
+        monthlyRevenuePercentage: Math.abs(percentageDifference),
+        monthlyRevenueTrajectory,
       };
 
       let salesDifference = monthlySales[1].sales - monthlySales[0].sales;
-      let salesPercentage;
+
+      let salesPercentage = calculatePercentageChange(
+        monthlySales[0].sales,
+        monthlySales[1].sales
+      );
 
       // Calculate the percentage increase or decrease, handling the zero case
-      if (monthlySales[0].sales === 0) {
-        if (monthlySales[1].sales > 0) {
-          salesPercentage = salesDifference / 1; // Consider it as infinite growth
-        } else {
-          salesPercentage = 0; // No change if both months have zero revenue
-        }
-      } else {
-        salesPercentage = (salesDifference / monthlySales[0].sales) * 100;
-      }
 
       let salesTrajectory;
       if (salesDifference > 0) {
@@ -157,22 +164,14 @@ const Page = () => {
         numWeeks: 2,
       });
 
-      console.log(weeklySales);
-
       let weeklySalesDifference = weeklySales[0].sales - weeklySales[1].sales;
 
-      let weeklySalesPercentage;
+      let weeklySalesPercentage = calculatePercentageChange(
+        weeklySales[0].sales,
+        weeklySales[1].sales
+      );
 
-      if (weeklySales[0].sales === 0) {
-        if (weeklySales[1].sales > 0) {
-          weeklySalesPercentage = weeklySalesDifference / 1;
-        } else {
-          weeklySalesPercentage = 0;
-        }
-      } else {
-        weeklySalesPercentage =
-          (weeklySalesDifference / weeklySales[0].sales) * 100;
-      }
+      // calculate the percentage change
 
       let weeklySalesTrajectory;
       if (weeklySalesDifference > 0) {
@@ -186,14 +185,15 @@ const Page = () => {
       const weeklySalesObject = {
         numWeeklySales: weeklySalesDifference,
         weeklySalesDifference,
-        weeklySalesPercentage,
+        weeklySalesPercentage: Math.abs(weeklySalesPercentage),
         weeklySalesTrajectory,
       };
 
       const salesObject = {
         numMonthlySales: monthlyOrders.length,
+        numOrders: totalSales,
         salesDifference,
-        salesPercentage,
+        salesPercentage: Math.abs(salesPercentage),
         salesTrajectory,
       };
 
@@ -439,6 +439,7 @@ const Page = () => {
         {/* <div className="max-lg:col-span-1 max-lg:gap-6 max-lg:flex-col flex col-span-3 w-full"> */}
         <DashboardCard
           title="This Week"
+          timeFrame="week"
           badgeValue={`${data?.weeklySalesObject?.weeklySalesPercentage}%`}
           increase={data?.weeklySalesObject?.weeklySalesTrajectory ?? false}
           currency={false}
@@ -446,22 +447,24 @@ const Page = () => {
           progressValue={data?.weeklySalesObject?.weeklySalesPercentage ?? 0}
           value={data?.weeklySalesObject?.numWeeklySales ?? 0}
           badgeVariant={
-            data?.salesObject?.salesTrajectory
+            data?.weeklySalesObject?.weeklySalesTrajectory
               ? "brandPositive"
               : "brandNegative"
           }
         />
-
+        {/* total orders */}
         <DashboardCard
           title="Total Orders"
+          isNumerical={true}
           badgeValue={`${data?.salesObject?.salesPercentage}%`}
           increase={data?.salesObject?.salesTrajectory ?? false}
+          timeFrame="month"
           currency={false}
           Icon={() => (
             <ShoppingCart className="h-4 w-4 text-muted-foreground" />
           )}
           progressValue={data?.salesObject?.salesPercentage ?? 0}
-          value={data?.salesObject?.numMonthlySales ?? 0}
+          value={data?.salesObject?.numOrders ?? 0}
           badgeVariant={
             data?.salesObject?.salesTrajectory
               ? "brandPositive"
@@ -470,10 +473,11 @@ const Page = () => {
         />
         <DashboardCard
           title="Earned This Month"
-          badgeValue={`$${data?.monthlyRevenueObject?.monthlyRevenueDifference}`}
+          badgeValue={`${data?.monthlyRevenueObject?.monthlyRevenuePercentage}%`}
           increase={
             data?.monthlyRevenueObject?.monthlyRevenueTrajectory ?? false
           }
+          timeFrame="month"
           currency={true}
           Icon={() => (
             <CircleDollarSign className="h-4 w-4 text-muted-foreground" />
