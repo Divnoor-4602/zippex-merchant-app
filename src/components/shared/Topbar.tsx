@@ -8,16 +8,15 @@ import {
 } from "@/components/ui/breadcrumb";
 import ProfileDropdown from "./ProfileDropdown";
 import { usePathname, useRouter } from "next/navigation";
-
 import React from "react";
 import { capitalizeFirstLetter } from "@/lib/utils";
-import { Badge } from "../ui/badge";
 import PendingRequests from "./PendingRequests";
 import { Button } from "../ui/button";
 import Link from "next/link";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faShopify } from "@fortawesome/free-brands-svg-icons";
 
 const Topbar = () => {
-  const router = useRouter();
   const pathname = usePathname();
 
   const pathList = pathname.split("/");
@@ -47,10 +46,13 @@ const Topbar = () => {
           {/* in review -> pending on accepting the orders */}
           <Link href="/connect-shopify">
             <Button
-              className="h-[30px] text-xs bg-green-600"
+              className="h-[30px] text-xs flex items-center gap-1 relative"
+              variant={"outline"}
               onClick={() => {}}
             >
+              <FontAwesomeIcon icon={faShopify} size="xl" />
               Connect Shopify
+              <div className="absolute size-3 rounded-full -top-1 -right-1 bg-green-500 animate-pulse"></div>
             </Button>
           </Link>
           <PendingRequests />

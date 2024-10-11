@@ -5,6 +5,8 @@ import { AuthProvider } from "@/context/context";
 import { Toaster } from "sonner";
 import ReactQueryProvider from "@/lib/ReactQueryProvider";
 import { SnapshotProvider } from "@/context/SnapshotContext";
+import "@fortawesome/fontawesome-svg-core/styles.css"; // Import Font Awesome CSS
+import "../lib/FontAwesome"; // Import your Font Awesome config
 
 const inter = Inter({ subsets: ["latin"] });
 
