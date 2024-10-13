@@ -30,9 +30,14 @@ import AnalyticsCard from "../cards/AnalyticsCard";
 // Imports end here
 
 const CustomLabel = (props: any) => {
-  const { x, y, width, value } = props;
+  let { x, y, width, value } = props;
   let xIncrement = 0;
-  if (width < 30) xIncrement = 30;
+  if (width < 30) {
+    xIncrement = 30;
+  }
+  if (value.length > 10) {
+    xIncrement = xIncrement + (value.length - 10) * 4;
+  }
   return (
     <text
       x={x + xIncrement + width / 2}

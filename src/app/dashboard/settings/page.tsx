@@ -89,6 +89,20 @@ const SettingsPage = () => {
         url = merchantData?.businessImageUrl;
       }
 
+      const result = detailsSchema.safeParse({
+        ownerName,
+        businessDescription,
+      });
+      if (!result.success) {
+        let errorMessage = "";
+        result.error.issues.forEach((issue) => {
+          errorMessage =
+            errorMessage + issue.path[0] + ": " + issue.message + ". \n";
+        });
+        toast.error(errorMessage, { duration: 7000 });
+        return;
+      }
+
       //saving merchant details
       toast.promise(
         updateDoc(merchantDocRef, {

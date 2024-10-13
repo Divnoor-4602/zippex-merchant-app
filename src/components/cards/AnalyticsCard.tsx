@@ -75,7 +75,7 @@ const AnalyticsCard = ({
               </Badge>
             ) : (
               <>
-                <p className="text-2xl md:text-3xl font-bold truncate text-black">
+                <p className="text-2xl md:text-3xl font-bold truncate lg:max-w-[270px] max-lg:max-w-[80%] text-black">
                   {data[0]?.name}
                 </p>
                 <Badge variant={badgeVariant} className="mt-3 w-fit">
@@ -123,14 +123,12 @@ const AnalyticsCard = ({
               <ResponsiveContainer
                 width={"100%"}
                 height={data.length * 100}
-                //   height={testData.length * 100}
                 className="h-full w-full border rounded-lg px-5 py-1 bg-gray-100"
               >
                 <BarChart
                   accessibilityLayer
                   layout="vertical"
                   data={data}
-                  // data={testData.toReversed()}
                   margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
                   barSize={40}
                   barCategoryGap={0}
