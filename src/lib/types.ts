@@ -1,7 +1,6 @@
 export type Inventory = {
   name: string;
   category: string;
-  costPrice: number;
   description: string;
   fragility: number;
   id: string;
@@ -10,6 +9,7 @@ export type Inventory = {
   price: number;
   quantity: number;
   totalOrders: number;
+  createdAt: { seconds: number; nanoseconds: number } | null; // Not null timestamp
 };
 
 export type Order = {
