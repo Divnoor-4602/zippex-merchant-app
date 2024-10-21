@@ -1,4 +1,4 @@
-import { validateRequest } from "@/lib/shopify/utils";
+import { createWebhook, validateRequest } from "@/lib/shopify/utils";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
@@ -12,9 +12,6 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get("code");
   const shop = searchParams.get("shop");
   console.log("running");
-
-  console.log(code);
-  console.log(shop);
 
   if (!code || !shop) {
     return NextResponse.json(
@@ -45,15 +42,27 @@ export async function GET(request: NextRequest) {
       const accessToken = data.access_token;
       console.log(accessToken);
 
+      await createWebhook(
+        shop,
+        accessToken,
+        `${process.env.BASE_URL}api/webhooks/shopify/compliance`,
+        "products/create"
+      );
+      await createWebhook(
+        shop,
+        accessToken,
+        `${process.env.BASE_URL}api/webhooks/shopify/updateProduct`,
+        "products/update"
+      );
+      await createWebhook(
+        shop,
+        accessToken,
+        `${process.env.BASE_URL}api/webhooks/shopify/deleteProduct`,
+        "products/delete"
+      );
       return NextResponse.redirect(
-        // `https://merchant.zippex.app/dashboard/port-Inventory?access_token=${accessToken}&shop=${shop}`
         `${process.env.BASE_URL}dashboard/port-Inventory?access_token=${accessToken}&shop=${shop}`
       );
-      // You can save the access_token for future use (e.g., in your database)
-      // Redirect to the inventory sync page after obtaining access_token
-      // return NextResponse.redirect(
-      //   `/api/shopify/inventory?shop=${shop}&access_token=${accessToken}`
-      // );
     }
   } else {
     return NextResponse.json(
