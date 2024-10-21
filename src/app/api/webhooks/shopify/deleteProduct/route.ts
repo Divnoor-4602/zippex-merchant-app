@@ -4,8 +4,6 @@ import {
   getMerchantInventoryRef,
   validateWebhook,
 } from "@/lib/shopify/utils";
-import { Inventory } from "@/lib/types";
-import { Timestamp } from "firebase-admin/firestore";
 import { NextRequest, NextResponse } from "next/server";
 
 const processedWebhooks: { webhookId: string; expiryTime: number }[] = [];
@@ -19,15 +17,11 @@ const cleanUpMemory = () => {
   });
 };
 
-setInterval(() => {
-  cleanUpMemory();
-}, 10000); // Clean up memory every 10 seconds
-
-export const addWebhookToMemory = (webhookId: string, expiryTime: number) => {
+const addWebhookToMemory = (webhookId: string, expiryTime: number) => {
   processedWebhooks.push({ webhookId, expiryTime });
 };
 
-export const checkIfWebhookIsProcessed = (webhookId: string) => {
+const checkIfWebhookIsProcessed = (webhookId: string) => {
   return processedWebhooks.some((webhook) => webhook.webhookId === webhookId);
 };
 
@@ -84,6 +78,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
   }
 
   //checking if webhook is already processed
+  cleanUpMemory();
   if (checkIfWebhookIsProcessed(webhookData.id)) {
     return NextResponse.json(
       { message: "Webhook already processed" },
@@ -94,7 +89,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
   }
 
   //adding webhook to processed memory
-  addWebhookToMemory(webhookData.id, Date.now() + 10000);
+  addWebhookToMemory(webhookData.id, Date.now() + 2000);
 
   // Get the shop URL from the headers
   const shopUrl = req.headers.get("x-shopify-shop-domain");
