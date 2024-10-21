@@ -46,7 +46,19 @@ export async function GET(request: NextRequest) {
         shop,
         accessToken,
         `${process.env.BASE_URL}api/webhooks/shopify/compliance`,
-        "products/create"
+        "customers/data_request"
+      );
+      await createWebhook(
+        shop,
+        accessToken,
+        `${process.env.BASE_URL}api/webhooks/shopify/compliance`,
+        "customers/redact"
+      );
+      await createWebhook(
+        shop,
+        accessToken,
+        `${process.env.BASE_URL}api/webhooks/shopify/compliance`,
+        "shop/redact"
       );
       await createWebhook(
         shop,
