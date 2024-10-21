@@ -1,5 +1,3 @@
-// todo: setup protected routes using firebase admin
-// /lib/firebaseAdmin.js
 import admin from "firebase-admin";
 
 if (!admin.apps.length) {

@@ -1,5 +1,27 @@
 import { NextRequest } from "next/server";
 import crypto from "crypto";
+import { db } from "../firebase/firebaseAdmin";
+import { Inventory } from "../types";
+import * as cheerio from "cheerio";
+
+const processedWebhooks: { webhookId: string; expiryTime: number }[] = [];
+
+export const cleanUpMemory = () => {
+  const currentTime = Date.now();
+  processedWebhooks.forEach((webhook) => {
+    if (currentTime > webhook.expiryTime) {
+      processedWebhooks.splice(processedWebhooks.indexOf(webhook), 1);
+    }
+  });
+};
+
+export const addWebhookToMemory = (webhookId: string, expiryTime: number) => {
+  processedWebhooks.push({ webhookId, expiryTime });
+};
+
+export const checkIfWebhookIsProcessed = (webhookId: string) => {
+  return processedWebhooks.some((webhook) => webhook.webhookId === webhookId);
+};
 
 export const validateRequest = async (req: NextRequest) => {
   const { searchParams } = new URL(req.url);
@@ -35,6 +57,43 @@ export const validateRequest = async (req: NextRequest) => {
   return isValid;
 };
 
+export const validateWebhook = async (rawBody: string, req: NextRequest) => {
+  // 1. Your Shopify secret key (from your Shopify app settings)
+  const secret = process.env.SHOPIFY_CLIENT_SECRET!;
+
+  // 2. The raw body of the incoming request (make sure to get the raw body)
+
+  // 3. Shopify's HMAC signature from the webhook header
+  const shopifyHmac = req.headers.get("x-shopify-hmac-sha256");
+  if (!shopifyHmac) {
+    console.log("No shopify hmac found");
+    return false;
+  }
+
+  // 4. Generate HMAC using the secret and raw body
+  const generatedHmac = crypto
+    .createHmac("sha256", secret)
+    .update(rawBody, "utf8")
+    .digest("base64");
+
+  // 5. Convert both HMACs to Buffers before comparison
+  const bufferShopifyHmac = Buffer.from(shopifyHmac, "base64");
+  const bufferGeneratedHmac = Buffer.from(generatedHmac, "base64");
+
+  // 6. Use crypto.timingSafeEqual to compare the Buffers
+  if (
+    crypto.timingSafeEqual(
+      new Uint8Array(bufferShopifyHmac),
+      new Uint8Array(bufferGeneratedHmac)
+    )
+  ) {
+    console.log("Webhook verified");
+    return true;
+  } else {
+    console.log("Webhook verification failed");
+  }
+};
+
 export const getStoreDetailsByShop = async (shop: string) => {
   return false;
 };
@@ -42,3 +101,156 @@ export const getStoreDetailsByShop = async (shop: string) => {
 export const checkAccessTokenValidity = (storeDetails: any) => {
   return true;
 };
+
+//creating webhook
+export async function createWebhook(
+  shop: string,
+  accessToken: string,
+  webhookUrl: string,
+  topic: string
+) {
+  const apiUrl = `https://${shop}/admin/api/2024-10/webhooks.json`;
+  const webhookData = {
+    webhook: {
+      topic,
+      address: webhookUrl, // Your app's endpoint URL
+      format: "json",
+    },
+  };
+
+  try {
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      headers: {
+        "X-Shopify-Access-Token": accessToken,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(webhookData),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      console.log("Webhook created:", data);
+    } else {
+      const errorData = await response.json();
+      console.error("Error creating webhook:", errorData);
+    }
+  } catch (error) {
+    console.error("Fetch error:", error);
+  }
+}
+
+//Fetch merchant data from store url
+export const fetchMerchantDataFromStoreUrl = async (shopUrl: string) => {
+  try {
+    const merchantsRef = db.collection("merchants");
+    const querySnapshot = await merchantsRef
+      .where("shopifyShop", "==", shopUrl)
+      .get();
+
+    if (querySnapshot.empty) {
+      console.log("No matching merchant found.");
+      return null;
+    }
+
+    // querySnapshot.forEach((doc) => {
+    //   console.log("Merchant ID:", doc.id);
+    //   console.log("Merchant Data:", doc.data());
+    // });
+
+    // Optionally, return the first matching document (if you expect only one)
+    const merchantDoc = querySnapshot.docs[0];
+    return merchantDoc ? merchantDoc.data() : null;
+  } catch (error) {
+    console.error("Error fetching merchant:", error);
+  }
+};
+
+export const getMerchantInventoryRef = (merchantId: string) => {
+  // Reference to the inventory subcollection within the merchant's document
+  const inventoryRef = db
+    .collection("merchants")
+    .doc(merchantId)
+    .collection("inventory");
+  return inventoryRef;
+};
+
+//Create a product if done in shopify
+const createProductShopifyToZippex = async (
+  productData: Inventory,
+  merchantId: string
+) => {
+  try {
+    const productsRef = db.collection("products");
+    const productDocRef = productsRef.doc(productData.id);
+    await productDocRef.set(productData);
+    console.log("Product created:", productDocRef.id);
+
+    const merchantsRef = db.collection("merchants");
+    const merchantDocRef = merchantsRef.doc(merchantId);
+    await merchantDocRef.update({
+      products: {
+        [productData.id]: true,
+      },
+    });
+    console.log("Merchant updated:", merchantDocRef.id);
+  } catch (error) {
+    console.error("Error creating product:", error);
+  }
+};
+
+//Update a product if done in shopify
+const updateProductShopifyToZippex = async (
+  productData: Inventory,
+  merchantId: string
+) => {
+  try {
+    const productsRef = db.collection("products");
+    const productDocRef = productsRef.doc(productData.id);
+    await productDocRef.update(productData);
+    console.log("Product updated:", productDocRef.id);
+
+    const merchantsRef = db.collection("merchants");
+    const merchantDocRef = merchantsRef.doc(merchantId);
+    await merchantDocRef.update({
+      products: {
+        [productData.id]: true,
+      },
+    });
+    console.log("Merchant updated:", merchantDocRef.id);
+  } catch (error) {
+    console.error("Error updating product:", error);
+  }
+};
+
+//Delete a product if done in shopify
+const deleteProductShopifyToZippex = async (
+  productId: string,
+  merchantId: string
+) => {
+  try {
+    const productsRef = db.collection("products");
+    const productDocRef = productsRef.doc(productId);
+    await productDocRef.delete();
+    console.log("Product deleted:", productDocRef.id);
+
+    const merchantsRef = db.collection("merchants");
+    const merchantDocRef = merchantsRef.doc(merchantId);
+    await merchantDocRef.update({
+      products: {
+        // [productId]: FieldValue.delete(),
+      },
+    });
+    console.log("Merchant updated:", merchantDocRef.id);
+  } catch (error) {
+    console.error("Error deleting product:", error);
+  }
+};
+
+export function extractDescription(html: string) {
+  // Load the HTML string into cheerio
+  const $ = cheerio.load(html);
+
+  // Extract and return the plain text (cheerio's text method)
+  return $.text();
+}

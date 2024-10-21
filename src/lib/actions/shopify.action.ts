@@ -29,9 +29,7 @@ export async function fetchAllProducts(
                 id
                 title
                 productType
-                vendor
-                handle
-                bodyHtml
+                description
                 variants(first: 100) {
                   edges {
                     node {
@@ -101,23 +99,27 @@ export async function fetchAllProducts(
         const productNode = edge.node;
 
         // Get the product image URL (first image)
-        const imageUrl =
-          productNode.images.edges[0]?.node.src ||
-          "https://via.placeholder.com/150";
+        const imageUrl = productNode.images.edges[0]?.node.src || "";
 
         // Iterate over each variant and treat it as a separate product
         for (const variantEdge of productNode.variants.edges) {
           const variantNode = variantEdge.node;
+          console.log(productNode);
 
           // Map Shopify variant to your Product interface
           const product: Inventory = {
-            name: `${productNode.title} - ${variantNode.title}`,
+            name:
+              productNode.variants.edges.length > 1
+                ? `${productNode.title} - ${variantNode.title}`
+                : productNode.title,
             category: productNode.productType || "General",
             description: variantNode.title || "",
             fragility: 0, // Default value; adjust as needed
-            id: extractNumericId(variantNode.id), // Use variant ID as the unique identifier
+            id: `${extractNumericId(productNode.id)}-${extractNumericId(
+              variantNode.id
+            )}`, // Use variant ID as the unique identifier
             imageUrl: imageUrl,
-            longDescription: productNode.bodyHtml || "",
+            longDescription: productNode.description || "",
             price: parseFloat(variantNode.price || "0"),
             quantity: variantNode.inventoryQuantity || 0,
             totalOrders: 0, // Adjust as needed

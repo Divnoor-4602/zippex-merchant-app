@@ -12,7 +12,6 @@ import {
 import { twMerge } from "tailwind-merge";
 import {
   ApplicationVerifier,
-  signInWithPhoneNumber,
   multiFactor,
   User,
   PhoneAuthProvider,
