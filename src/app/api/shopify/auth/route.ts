@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
       }
     } else {
       console.error("Invalid request");
-      return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const shop = request.nextUrl.searchParams.get("shop");

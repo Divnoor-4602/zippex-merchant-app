@@ -63,7 +63,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
   // Validate the request
   const isValid = await validateWebhook(rawBody, req);
   if (!isValid) {
-    return NextResponse.json({ error: "Invalid request" }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   let webhookData;
