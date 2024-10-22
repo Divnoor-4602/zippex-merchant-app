@@ -54,11 +54,11 @@ const Page = () => {
       setInventoryOverviewData((prev: any) =>
         totalInventory.map((item: any, index: number) => {
           return {
-            id: item.id,
-            image: item.imageUrl,
-            name: item.name,
-            totalOrders: item.totalOrders,
-            price: item.price,
+            id: item?.id,
+            image: item?.imageUrl,
+            name: item?.name,
+            totalOrders: item?.totalOrders,
+            price: item?.price,
           };
         })
       );
@@ -103,7 +103,8 @@ const Page = () => {
 
       return { totalInventory, lowStockChartData, mostOrderedChartData };
     },
-    refetchInterval: 5000,
+    //!fix this 
+    // refetchInterval: 5000,
   });
 
   if (isLoading) {
@@ -130,15 +131,15 @@ const Page = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl md:text-3xl font-bold truncate">
-                    {lowStock.name}
+                    {lowStock?.name}
                   </div>
                   <div className="flex flex-wrap gap-2 items-center">
                     <Badge variant={"brandNegative"} className="mt-3">
                       <OctagonAlert className="size-4 mr-1" />
-                      {lowStock.quantity} units remaining
+                      {lowStock?.quantity} units remaining
                     </Badge>
                     <Badge variant={"blue"} className="mt-3">
-                      {lowStock.category}
+                      {lowStock?.category}
                     </Badge>
                   </div>
                   <div className="mt-8">
@@ -166,15 +167,15 @@ const Page = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl md:text-3xl font-bold truncate">
-                    {mostOrdered.name}
+                    {mostOrdered?.name}
                   </div>
                   <div className="flex flex-wrap gap-2 items-center">
                     <Badge variant={"brandPositive"} className="mt-3">
                       <Box className="size-4 mr-1" />
-                      {mostOrdered.totalOrders} units sold
+                      {mostOrdered?.totalOrders} units sold
                     </Badge>
                     <Badge variant={"blue"} className="mt-3">
-                      {mostOrdered.category}
+                      {mostOrdered?.category}
                     </Badge>
                   </div>
                   <div className="mt-8">
