@@ -60,6 +60,15 @@ const OnBoardingForm = () => {
     },
   });
 
+  // State for uploaded file URLs
+  const [uploadedUrls, setUploadedUrls] = useState({
+    businessImage: "",
+  });
+
+  const handleFileUpload = (fileType: string, url: string) => {
+    setUploadedUrls((prev) => ({ ...prev, [fileType]: url }));
+  };
+
   // form submit handler
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     const currentUserUid = auth.currentUser?.uid;
@@ -76,11 +85,12 @@ const OnBoardingForm = () => {
       await updateDoc(merchantRef, {
         businessDescription: values.businessDescription,
         businessType: values.businessType,
-        isOnBoarded: true,
+        onboardingStep: 1,
+        businessImageUrl: uploadedUrls.businessImage,
       });
 
-      router.push("/dashboard/home");
-      toast.success("Onboarding completed successfully!");
+      router.push("/business-on-boarding/business-document-on-boarding");
+      toast.success("Kindly upload relevant documents for your business!");
 
       setIsLoading(false);
     } catch (error) {
@@ -113,9 +123,9 @@ const OnBoardingForm = () => {
               className="space-y-6 flex flex-col"
             >
               <UploadButton
-                handleLogoUploaded={function (url: string): void {
-                  throw new Error("Function not implemented.");
-                }}
+                handleLogoUploaded={(url) =>
+                  handleFileUpload("businessLogo", url)
+                }
               />
               <FormField
                 control={form.control}
