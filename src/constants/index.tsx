@@ -42,11 +42,11 @@ export const sidebarMenu = [
     icon: <BadgeDollarSign className="size-5" />,
     path: "/dashboard/promotions-discounts",
   },
-  {
-    title: "Billings and Payments",
-    icon: <CreditCard className="size-5" />,
-    path: "/dashboard/billings-payments",
-  },
+  // {
+  //   title: "Billings and Payments",
+  //   icon: <CreditCard className="size-5" />,
+  //   path: "/dashboard/billings-payments",
+  // },
   {
     title: "Help Center",
     icon: <BadgeHelp className="size-5" />,
