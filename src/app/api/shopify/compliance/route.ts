@@ -10,6 +10,8 @@ export async function POST(request: NextRequest) {
     const isValidRequest = await validateRequest(request);
     if (isValidRequest) {
       return NextResponse.json({ message: "Success" }, { status: 200 });
+    } else {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 }); 
     }
   } catch (error) {
     console.log(error);
