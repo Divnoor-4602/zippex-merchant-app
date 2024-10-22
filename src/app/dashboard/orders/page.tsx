@@ -119,8 +119,8 @@ const Page = () => {
         merchantId,
       });
 
-      const previousMonthSales = monthlySales[0].sales;
-      const currentMonthSales = monthlySales[1].sales;
+      const previousMonthSales = monthlySales[0]?.sales;
+      const currentMonthSales = monthlySales[1]?.sales;
 
       const percentageDifference = calculatePercentageChange(
         previousMonthSales,
