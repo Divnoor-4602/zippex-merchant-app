@@ -6,7 +6,7 @@ export async function GET(request: NextRequest) {
 
   const isValidRequest = await validateRequest(request);
   if (!isValidRequest) {
-    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const code = searchParams.get("code");
