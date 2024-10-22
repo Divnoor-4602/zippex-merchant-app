@@ -212,7 +212,8 @@ const Page = () => {
       };
     },
   });
-
+  console.log(isLoading);
+  console.log(currentOrder);
   if (isLoading || !currentOrder) {
     return (
       <>
