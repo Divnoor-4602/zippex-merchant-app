@@ -44,7 +44,7 @@ const Topbar = () => {
         </Breadcrumb>
         <div className="flex items-center gap-4 self-end">
           {/* in review -> pending on accepting the orders */}
-          <Link href="/connect-shopify">
+          {/* <Link href="/connect-shopify">
             <Button
               className="h-[30px] text-xs flex items-center gap-1 relative"
               variant={"outline"}
@@ -54,7 +54,7 @@ const Topbar = () => {
               Connect Shopify
               <div className="absolute size-3 rounded-full -top-1 -right-1 bg-green-500 animate-pulse"></div>
             </Button>
-          </Link>
+          </Link> */}
           <PendingRequests />
           <ProfileDropdown />
         </div>
