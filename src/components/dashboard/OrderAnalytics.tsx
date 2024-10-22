@@ -187,11 +187,12 @@ const OrderAnalytics = ({
           <h1>
             {revenueGrowth[1]?.revenue - revenueGrowth[0]?.revenue >= 0
               ? "+"
-              : "-"}
+              : ""}
             {revenueGrowth[0]?.revenue === 0
               ? revenueGrowth[1]?.revenue
-              : (revenueGrowth[1]?.revenue - revenueGrowth[0]?.revenue) /
-                revenueGrowth[0]?.revenue}
+              : ((revenueGrowth[1]?.revenue - revenueGrowth[0]?.revenue) /
+                  revenueGrowth[0]?.revenue) *
+                100}
             %
           </h1>
           <p className="text-xl">Growth achieved</p>
