@@ -80,7 +80,6 @@ const SignInForm = () => {
         if (merchantData?.isOnBoarded) {
           if (merchantData?.isVerified) {
             toast.success("Sign in successful! Redirecting to dashboard");
-            setLoading((prev) => false);
             form.reset();
             router.push("/dashboard/home");
           } else {
