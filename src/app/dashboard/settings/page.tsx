@@ -49,7 +49,7 @@ const SettingsPage = () => {
 
   const storageRef = ref(
     storage,
-    `businessImages/${businessImageUrl?.name}-${user?.uid}`
+    `businessImages/${user?.uid}/${businessImageUrl?.name}`
   );
   const queryClient = useQueryClient();
 
@@ -77,7 +77,7 @@ const SettingsPage = () => {
       console.log(merchantData);
       if (businessImageUrl) {
         //delete the old image
-        const oldImageRef = ref(storage, merchantData?.businessImageUrl);
+        const oldImageRef = ref(storage, merchantData?.imageUrl);
         await deleteObject(oldImageRef);
 
         // create an upload task for the selected Image
@@ -86,7 +86,7 @@ const SettingsPage = () => {
 
         console.log(url);
       } else {
-        url = merchantData?.businessImageUrl;
+        url = merchantData?.imageUrl;
       }
 
       const result = detailsSchema.safeParse({
@@ -107,7 +107,7 @@ const SettingsPage = () => {
       toast.promise(
         updateDoc(merchantDocRef, {
           ...merchantData,
-          businessImageUrl: url,
+          imageUrl: url,
           businessAddress: mapData ?? merchantData?.businessAddress,
           businessDescription,
 
@@ -308,7 +308,7 @@ const SettingsPage = () => {
               />
             ) : (
               <Image
-                src={merchantData?.businessImageUrl}
+                src={merchantData?.imageUrl}
                 alt="Business Image"
                 width={80}
                 height={80}

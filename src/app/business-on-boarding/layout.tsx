@@ -7,13 +7,16 @@ import { toast } from "sonner";
 
 const OnboardingLayout = ({ children }: { children: React.ReactNode }) => {
   const user = auth.currentUser;
-  const merchantDocRef = doc(db, "merchants", user!.uid);
   const [merchantData, setMerchantData] = useState<any>(null);
   const router = useRouter();
   const path = usePathname();
 
   useEffect(() => {
+    if (!user) {
+      return;
+    }
     (async () => {
+      const merchantDocRef = doc(db, "merchants", user!.uid);
       const merchantDoc = (await getDoc(merchantDocRef)).data();
 
       setMerchantData(() => merchantDoc);

@@ -189,7 +189,7 @@ const EditProductForm = ({ product }: EditProductFormProps) => {
             Edit product
           </Button>
         </SheetTrigger>
-        <SheetContent>
+        <SheetContent className="overflow-auto">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
               <SheetHeader>

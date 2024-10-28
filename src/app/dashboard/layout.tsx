@@ -15,11 +15,14 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   const [merchantData, setMerchantData] = useState<any>(null);
 
   const user = auth.currentUser;
-  const merchantDocRef = doc(db, "merchants", user!.uid);
   const router = useRouter();
 
   useEffect(() => {
+    if (!user) {
+      return;
+    }
     (async () => {
+      const merchantDocRef = doc(db, "merchants", user!.uid);
       const merchantDoc = (await getDoc(merchantDocRef)).data();
 
       setMerchantData(() => merchantDoc);
@@ -37,8 +40,6 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
   if (merchantData?.isOnBoarded) {
     if (merchantData?.isVerified) {
-      toast.success("Sign in successful! Redirecting to dashboard");
-
       return (
         <>
           {/* main block */}
@@ -85,8 +86,6 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
         break;
     }
   }
-
-  //!Implement if not onbaorded, return to onboarding form and everything
 
   return (
     <>

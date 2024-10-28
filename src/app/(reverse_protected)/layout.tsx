@@ -12,26 +12,12 @@ import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
-  const [merchantData, setMerchantData] = useState<any>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-
   const user = auth.currentUser;
-  const merchantDocRef = doc(db, "merchants", user!.uid);
   const router = useRouter();
-
-  useEffect(() => {
-    (async () => {
-      const merchantDoc = (await getDoc(merchantDocRef)).data();
-
-      setMerchantData(() => merchantDoc);
-    })();
-  }, []);
 
   if (user) {
     router.replace("/dashboard/home");
   }
-
-  
 
   return <>{children}</>;
 };

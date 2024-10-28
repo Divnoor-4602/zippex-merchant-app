@@ -30,6 +30,7 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { checkMerchantByEmail } from "@/lib/utils";
 
 // sign in into the account check if onboarding is compplete, if not redirect to onboarding otherwise redirect to home
 
@@ -59,56 +60,68 @@ const SignInForm = () => {
   // form submit handler
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      setLoading((prev) => true);
-      const response = await signInWithEmailAndPassword(
-        auth,
-        values.email,
-        values.password
-      );
+      if (await checkMerchantByEmail(values.email)) {
+        setLoading((prev) => true);
+        const response = await signInWithEmailAndPassword(
+          auth,
+          values.email,
+          values.password
+        );
 
-      // check if onboarding is complete, yes, redirect to home, no, redirect to onboarding
+        // check if onboarding is complete, yes, redirect to home, no, redirect to onboarding
 
-      const merchantRef = doc(db, "merchants", response.user.uid);
-      const merchantSnap = await getDoc(merchantRef);
+        const merchantRef = doc(db, "merchants", response.user.uid);
+        const merchantSnap = await getDoc(merchantRef);
 
-      const merchantData = merchantSnap.data();
+        const merchantData = merchantSnap.data();
 
-      //todo: when you add the shopfy integration, add it after the verification as we do not want to add in the inventory if the merchant is not verified, and once they are verified then we ove on the shopify or the inventory import and then we go to the home screen at the very end
+        //todo: when you add the shopfy integration, add it after the verification as we do not want to add in the inventory if the merchant is not verified, and once they are verified then we ove on the shopify or the inventory import and then we go to the home screen at the very end
 
-      if (merchantData?.isOnBoarded) {
-        if (merchantData?.isVerified) {
-          toast.success("Sign in successful! Redirecting to dashboard");
-          setLoading((prev) => false);
-          form.reset();
-          router.push("/dashboard/home");
-        } else {
-          toast.warning(
-            "Your account is not verified yet, please wait for the verification process to complete!"
-          );
-          router.push("/business-on-boarding/business-verification-pending");
-        }
-      } else {
-        switch (merchantData?.onboardingStep) {
-          case 0:
+        if (merchantData?.isOnBoarded) {
+          if (merchantData?.isVerified) {
+            toast.success("Sign in successful! Redirecting to dashboard");
+            setLoading((prev) => false);
+            form.reset();
+            router.push("/dashboard/home");
+          } else {
             toast.warning(
-              "Please finish your onboarding process to access your Dashboard!"
-            );
-            router.push("/business-on-boarding");
-            break;
-          case 1:
-            toast.warning(
-              "Please finish your onboarding process to access your Dashboard!"
-            );
-            router.push("/business-on-boarding/business-document-on-boarding");
-            break;
-
-          case 2:
-            toast.warning(
-              "Please finish your onboarding process to access your Dashboard!"
+              "Your account is not verified yet, please wait for the verification process to complete!"
             );
             router.push("/business-on-boarding/business-verification-pending");
-            break;
+          }
+        } else {
+          switch (merchantData?.onboardingStep) {
+            case 0:
+              toast.warning(
+                "Please finish your onboarding process to access your Dashboard!"
+              );
+              router.push("/business-on-boarding");
+              break;
+            case 1:
+              toast.warning(
+                "Please finish your onboarding process to access your Dashboard!"
+              );
+              router.push(
+                "/business-on-boarding/business-document-on-boarding"
+              );
+              break;
+
+            case 2:
+              toast.warning(
+                "Please finish your onboarding process to access your Dashboard!"
+              );
+              router.push(
+                "/business-on-boarding/business-verification-pending"
+              );
+              break;
+          }
         }
+      } else {
+        toast.warning(
+          "Account not registered with Zippex Merchant, please sign up first!"
+        );
+        setLoading((prev) => false);
+        form.reset();
       }
     } catch (error: any) {
       console.log(error);

@@ -16,7 +16,8 @@ import {
   User,
   PhoneAuthProvider,
 } from "firebase/auth";
-import { auth } from "./firebase";
+import { auth, db } from "./firebase";
+import { collection, getDocs, query, where } from "firebase/firestore";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -165,3 +166,25 @@ export const calculatePercentageChange = (
     return (difference / prevValue) * 100;
   }
 };
+
+export async function checkMerchantByEmail(email: string) {
+  try {
+    const merchantsRef = collection(db, "merchants");
+    const q = query(merchantsRef, where("email", "==", email.toLowerCase()));
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+      console.log("Merchant with this email exists.");
+      // You can also access the specific document data if needed:
+      querySnapshot.forEach((doc) => {
+        console.log(doc.id, " => ", doc.data());
+      });
+      return true; // Entry exists
+    } else {
+      return false; // No entry found
+    }
+  } catch (error) {
+    console.error("Error checking merchant by email:", error);
+    return false; // Handle errors gracefully
+  }
+}
