@@ -200,8 +200,8 @@ const OrderAnalytics = ({
         <ResponsiveContainer
           width="95%"
           aspect={1}
-          height={200}
-          className="h-full min-h-[400px] w-full rounded-lg lg:px-5 max-md:px-0 py-1 border-none aspect-square basis-[50%] flex justify-center items-center"
+          // height={200}
+          className="h-full min-h-[400px] max-h-[90%] w-full rounded-lg lg:px-5 max-md:px-0 py-1 border-none aspect-square basis-[50%] flex justify-center items-center"
         >
           <BarChart
             accessibilityLayer

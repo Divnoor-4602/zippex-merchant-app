@@ -34,12 +34,15 @@ const ProfileDropdown = () => {
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>{user!.email}</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>Edit Profile</DropdownMenuItem>
-          <DropdownMenuItem onClick={() => router.push("/dashboard/settings")}>
+          <DropdownMenuItem
+            onClick={() => router.push("/dashboard/settings")}
+            className="hover:cursor-pointer"
+          >
             Settings
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => signOut(auth).then(() => router.push("/sign-in"))}
+            className="hover:cursor-pointer"
           >
             Sign out
           </DropdownMenuItem>
