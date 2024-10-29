@@ -13,9 +13,6 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Zippex",
   description: "Just zippex it",
-  icons: {
-    icon: "../../public/images/zippex-box.svg",
-  },
 };
 
 export default function RootLayout({
@@ -30,6 +27,7 @@ export default function RootLayout({
           async
           src={`https://maps.googleapis.com/maps/api/js?key=${process.env.GOOGLE_PLACES_AUTOCOMPLETE_API_KEY}&libraries=places`}
         ></script>
+        <link rel="icon" href="/favicon.ico" type="image/x-icon" />
       </head>
       <body className={inter.className}>
         <AuthProvider>
