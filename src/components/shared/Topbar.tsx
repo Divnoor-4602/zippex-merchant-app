@@ -15,6 +15,7 @@ import { Button } from "../ui/button";
 import Link from "next/link";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faShopify } from "@fortawesome/free-brands-svg-icons";
+import StoreStatus from "./StoreStatus";
 
 const Topbar = () => {
   const pathname = usePathname();
@@ -43,6 +44,7 @@ const Topbar = () => {
           </BreadcrumbList>
         </Breadcrumb>
         <div className="flex items-center gap-4 self-end">
+          <StoreStatus />
           {/* in review -> pending on accepting the orders */}
           {/* <Link href="/connect-shopify">
             <Button
