@@ -67,6 +67,7 @@ import {
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { getMonthlyRevenue } from "@/lib/actions/payment.actions";
+import { ErrorBoundary } from "next/dist/client/components/error-boundary";
 
 const Page = () => {
   // search input zod schem
@@ -199,7 +200,8 @@ const Page = () => {
 
       // now do the same for the weekly
 
-      setCurrentOrder((prev: any) => monthlyOrders[0]);
+      setCurrentOrder((prev: any) => []);
+      console.log(yearlyOrders);
 
       return {
         dailyOrders,
@@ -285,7 +287,7 @@ const Page = () => {
 
       const order = await getDoc(orderRef);
       const orderData = order.data();
-
+      //!The fuck you even doing in this
       setOpen((prev) => true);
     }
   };
@@ -330,20 +332,23 @@ const Page = () => {
                   <div className="font-semibold text-sm">
                     Order {currentOrder?.id}
                   </div>
+
                   <div className="text-sm">
                     Date:{" "}
-                    {format(
-                      currentOrder?.createdAt.seconds * 1000,
-                      "d MMMM, yyyy"
-                    )}
+                    {currentOrder?.createdAt?.seconds
+                      ? format(
+                          currentOrder.createdAt.seconds * 1000,
+                          "d MMMM, yyyy"
+                        )
+                      : "Invalid Date"}
                   </div>
                 </div>
 
                 <div className="mt-6">
                   <div className="font-semibold text-sm">Order Details</div>
                   <ul className="mt-3">
-                    {currentOrder.basket &&
-                      currentOrder.basket.map((item: any, index: any) => (
+                    {currentOrder?.basket &&
+                      currentOrder?.basket?.map((item: any, index: any) => (
                         <li
                           className="flex items-center justify-between font-light text-sm"
                           key={item.name + item.id + index}
@@ -359,7 +364,7 @@ const Page = () => {
                       <span className="text-muted-foreground text-sm font-medium">
                         Total
                       </span>
-                      <span className="text-sm">${currentOrder.price}</span>
+                      <span className="text-sm">${currentOrder?.price}</span>
                     </li>
                   </ul>
                 </div>
@@ -369,13 +374,13 @@ const Page = () => {
                 <div className="mt-4">
                   <div className="font-medium text-sm">Origin</div>
                   <div className="text-sm font-light text-muted-foreground">
-                    {currentOrder.origin.description}
+                    {currentOrder?.origin?.description}
                   </div>
                 </div>
                 <div className="mt-4">
                   <div className="font-medium text-sm">Destination</div>
                   <div className="text-sm font-light text-muted-foreground">
-                    {currentOrder.destination.description}
+                    {currentOrder?.destination?.description}
                   </div>
                 </div>
 
@@ -416,7 +421,7 @@ const Page = () => {
               <div className="flex items-center gap-2">
                 <div className={`${color} rounded-full size-4 animate-pulse`} />
                 <div className="text-sm font-medium">
-                  {currentOrder.orderStatus}
+                  {currentOrder?.orderStatus}
                 </div>
               </div>
             </div>
