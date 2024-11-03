@@ -62,7 +62,7 @@ const OnBoardingForm = () => {
 
   // State for uploaded file URLs
   const [uploadedUrls, setUploadedUrls] = useState({
-    businessImage: "",
+    businessLogo: "",
   });
 
   const handleFileUpload = (fileType: string, url: string) => {
@@ -86,7 +86,7 @@ const OnBoardingForm = () => {
         businessDescription: values.businessDescription,
         businessType: values.businessType,
         onboardingStep: 1,
-        businessImageUrl: uploadedUrls.businessImage,
+        imageUrl: uploadedUrls.businessLogo,
       });
 
       router.push("/business-on-boarding/business-document-on-boarding");
