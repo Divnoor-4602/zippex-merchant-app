@@ -8,22 +8,18 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/card";
-import { auth, db } from "@/lib/firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { auth} from "@/lib/firebase";
 import { ChevronLeft } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
-import { useEffect, useState } from "react";
-import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 
 import EditProductForm from "@/components/forms/EditProductForm";
 import { getProduct } from "@/lib/actions/product.actions";
 import { useQuery } from "@tanstack/react-query";
-import router from "next/router";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const ProductDetails = () => {
