@@ -22,7 +22,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const Page = () => {
   const [allProducts, setAllProducts] = useState<any>([]);
-
   const router = useRouter();
 
   const queryClient = useQueryClient();
@@ -91,10 +90,16 @@ const Page = () => {
   } = useQuery({
     queryKey: ["inventory"],
     queryFn: async () => {
-      const totalInventory = await getInventory({
+      return await getInventory({
         merchantId,
       });
+    },
+    notifyOnChangeProps: ["data"],
+    refetchInterval: 5000,
+  });
 
+  useEffect(() => {
+    if (totalInventory) {
       setAllProducts((prev: any) =>
         totalInventory.map((item: any, index: number) => {
           return {
@@ -111,11 +116,8 @@ const Page = () => {
           };
         })
       );
-
-      return totalInventory;
-    },
-    refetchInterval: 5000,
-  });
+    }
+  }, [merchantId, server_deleteProduct, totalInventory]);
 
   if (isLoading) {
     return (
