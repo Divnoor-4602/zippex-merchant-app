@@ -287,8 +287,25 @@ const Page = () => {
 
       const order = await getDoc(orderRef);
       const orderData = order.data();
-      //!The fuck you even doing in this
-      setOpen((prev) => true);
+
+      if (orderData) {
+        // Fetch customer data using the userId from orderData
+        const userRef = doc(db, "Users", orderData.userId);
+        const user = await getDoc(userRef);
+        const userData = user.data();
+
+        if (userData) {
+          // Combine order data with customer data
+          const combinedData = { ...orderData, ...userData, id: order.id };
+          setCurrentOrder(combinedData);
+        } else {
+          toast.error("Customer data not found");
+        }
+
+        setOpen((prev) => true);
+      } else {
+        toast.error("Order data not found");
+      }
     }
   };
 
@@ -430,6 +447,7 @@ const Page = () => {
               <Button
                 type="button"
                 className="bg-brandblue hover:bg-brandblue/80"
+                onClick={() => setOpen(false)} // Add this line to close the dialog
               >
                 Close
               </Button>
