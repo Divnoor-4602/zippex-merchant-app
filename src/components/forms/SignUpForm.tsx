@@ -40,6 +40,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { httpsCallable } from "firebase/functions";
 import { functions } from "@/lib/firebase";
+import { checkMerchantByEmail } from "@/lib/utils";
 
 const formSchema = z
   .object({
@@ -133,10 +134,20 @@ const SignUpForm = () => {
   });
 
   // form submit handler
+
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
 
     try {
+      // Check if the email is already registered
+      if (await checkMerchantByEmail(values.email)) {
+        toast.warning("Account already registered as Zippex User.");
+        setIsLoading(false);
+        return;
+      }
+
+      // Proceed with the registration process
+
       // Create user with email and password in Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(
         auth,
@@ -144,8 +155,6 @@ const SignUpForm = () => {
         values.password
       );
       const user = userCredential.user;
-
-      // Immediately sign in the user after creation
 
       // Call Firebase Function to create a Stripe Express Connect account
       const createExpressConnectAccount = httpsCallable(
@@ -187,7 +196,6 @@ const SignUpForm = () => {
         onboardingStep: 0,
       });
 
-      // Notify the user to complete Stripe setup in the new tab
       toast.success(
         "Please complete your Stripe onboarding in the new tab. Once completed, return here to finish."
       );

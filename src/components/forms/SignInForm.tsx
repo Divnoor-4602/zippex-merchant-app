@@ -116,9 +116,7 @@ const SignInForm = () => {
           }
         }
       } else {
-        toast.warning(
-          "Account not registered with Zippex Merchant, please sign up first!"
-        );
+        toast.warning("Account already registered as Zippex User");
         setLoading((prev) => false);
         form.reset();
       }
