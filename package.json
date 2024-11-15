@@ -58,6 +58,7 @@
     "react-markdown": "^8.0.6",
     "recharts": "^2.13.0-alpha.4",
     "sonner": "^1.5.0",
+    "square": "^38.2.0",
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
     "zod": "^3.23.8"
