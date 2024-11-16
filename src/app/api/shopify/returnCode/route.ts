@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
         "products/delete"
       );
       return NextResponse.redirect(
-        `${process.env.BASE_URL}dashboard/port-Inventory?access_token=${accessToken}&shop=${shop}`
+        `${process.env.BASE_URL}dashboard/port-InventoryShopify?access_token=${accessToken}&shop=${shop}`
       );
     }
   } else {

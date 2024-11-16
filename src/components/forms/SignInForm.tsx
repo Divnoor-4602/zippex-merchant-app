@@ -27,7 +27,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { auth, db } from "@/lib/firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { checkMerchantByEmail } from "@/lib/utils";
@@ -56,6 +56,8 @@ const SignInForm = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectUrl = searchParams.get("redirectTo");
 
   // form submit handler
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
@@ -75,13 +77,15 @@ const SignInForm = () => {
 
         const merchantData = merchantSnap.data();
 
-        //todo: when you add the shopfy integration, add it after the verification as we do not want to add in the inventory if the merchant is not verified, and once they are verified then we ove on the shopify or the inventory import and then we go to the home screen at the very end
-
         if (merchantData?.isOnBoarded) {
           if (merchantData?.isVerified) {
             toast.success("Sign in successful! Redirecting to dashboard");
             form.reset();
-            router.push("/dashboard/home");
+            if (redirectUrl) {
+              router.push(redirectUrl);
+            } else {
+              router.push("/dashboard/home");
+            }
           } else {
             toast.warning(
               "Your account is not verified yet, please wait for the verification process to complete!"

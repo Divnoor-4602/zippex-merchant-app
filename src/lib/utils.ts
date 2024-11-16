@@ -176,9 +176,6 @@ export async function checkMerchantByEmail(email: string) {
     if (!querySnapshot.empty) {
       console.log("Merchant with this email exists.");
       // You can also access the specific document data if needed:
-      querySnapshot.forEach((doc) => {
-        console.log(doc.id, " => ", doc.data());
-      });
       return true; // Entry exists
     } else {
       return false; // No entry found

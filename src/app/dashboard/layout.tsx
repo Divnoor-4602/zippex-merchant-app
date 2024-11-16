@@ -6,7 +6,7 @@ import Topbar from "@/components/shared/Topbar";
 import { auth, db } from "@/lib/firebase";
 import { doc, getDoc, getDocs } from "firebase/firestore";
 import { Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -16,6 +16,9 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
   const user = auth.currentUser;
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const fullUrl = pathname + "?" + searchParams.toString();
 
   useEffect(() => {
     if (!user) {
@@ -30,7 +33,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   if (!user) {
-    router.push("/sign-in");
+    router.push("/sign-in" + "?redirectTo=" + fullUrl);
     return (
       <div className="min-h-screen min-w-screen flex flex-col items-center justify-center">
         <Loader2 className="size-12 animate-spin" />

@@ -16,9 +16,11 @@ import Link from "next/link";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faShopify } from "@fortawesome/free-brands-svg-icons";
 import StoreStatus from "./StoreStatus";
+import { Router } from "lucide-react";
 
 const Topbar = () => {
   const pathname = usePathname();
+  const router = useRouter();
 
   const pathList = pathname.split("/");
   pathList.shift();
@@ -44,6 +46,14 @@ const Topbar = () => {
           </BreadcrumbList>
         </Breadcrumb>
         <div className="flex items-center gap-4 self-end">
+          {/* <button
+            className="font-bold border border-black px-4 py-2 rounded-lg cursor-pointer"
+            onClick={() => {
+              router.push("/api/square/auth");
+            }}
+          >
+            Square
+          </button> */}
           <StoreStatus />
           {/* in review -> pending on accepting the orders */}
           {/* <Link href="/connect-shopify">
