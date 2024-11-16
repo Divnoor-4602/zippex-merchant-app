@@ -23,7 +23,7 @@ export async function GET() {
     `${baseUrl}api/square/callback`
   );
 
-  const SCOPE = "ITEMS_READ+ITEMS_WRITE+INVENTORY_READ+INVENTORY_WRITE";
+  const SCOPE = "ITEMS_READ+ITEMS_WRITE+INVENTORY_READ+INVENTORY_WRITE+MERCHANT_PROFILE_READ";
 
   const authUrl = `${squareUrl}client_id=${clientId}&redirect_uri=${encodedRedirectUri}&scope=${SCOPE}&session=false&state=${state}`;
 

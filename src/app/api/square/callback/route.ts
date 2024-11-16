@@ -35,15 +35,29 @@ export async function GET(req: NextRequest) {
       redirectUri: process.env.BASE_URL + "api/square/callback",
     });
 
-    const { accessToken, refreshToken, expiresAt } = response.result;
+    const {
+      accessToken,
+      refreshToken,
+      expiresAt,
+      merchantId: squareMerchantId,
+    } = response.result;
     console.log("Access token:", accessToken);
     console.log("Refresh token:", refreshToken);
     console.log("Expires at:", expiresAt);
 
-    // Store tokens securely in your database, associated with the user or merchant ID
-    // Example: await saveTokensToDatabase(userId, accessToken, refreshToken);
+    //redirect to front end to user sign in token
 
-    return NextResponse.redirect(process.env.BASE_URL! + "dashboard/integrations");
+    return NextResponse.redirect(
+      process.env.BASE_URL! +
+        "dashboard/port-InventorySquare?access_token=" +
+        accessToken +
+        "&refresh_token=" +
+        refreshToken +
+        "&expires_at=" +
+        expiresAt +
+        "&square_merchant_id=" +
+        squareMerchantId
+    );
   } catch (error) {
     console.error("OAuth Error:", error);
     return NextResponse.json(

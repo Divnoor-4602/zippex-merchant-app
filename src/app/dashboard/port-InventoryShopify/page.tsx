@@ -109,7 +109,7 @@ async function updateMerchantInventory(
   }
 }
 
-const PortInventoryPage = () => {
+const PortInventoryPageShopify = () => {
   const currentUser = auth.currentUser;
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -129,6 +129,7 @@ const PortInventoryPage = () => {
     mutationFn: async () => {
       await updateDoc(merchantDocRef, {
         ...merchantData,
+        integrationType: "shopify",
         shopifyAccessToken: accessToken,
         shopifyShop: shop,
       });
@@ -192,4 +193,4 @@ const PortInventoryPage = () => {
   );
 };
 
-export default PortInventoryPage;
+export default PortInventoryPageShopify;
