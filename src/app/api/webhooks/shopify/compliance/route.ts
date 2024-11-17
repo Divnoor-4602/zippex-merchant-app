@@ -1,4 +1,4 @@
-import { validateRequest, validateWebhook } from "@/lib/shopify/utils";
+import { validateWebhook } from "@/lib/shopify/utils";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {

@@ -1,7 +1,7 @@
 "use server";
 import { Client, Environment } from "square";
 
-async function fetchAllProducts(accessToken: string) {
+export async function fetchAllProducts(accessToken: string) {
   const client = new Client({
     accessToken: accessToken,
     environment:
@@ -38,31 +38,31 @@ async function fetchAllProducts(accessToken: string) {
       if (cursor) {
         params.cursor = cursor;
       }
-      
+
       const response = await catalogApi.searchCatalogObjects(params);
       const { objects, relatedObjects, cursor: nextCursor } = response.result;
-      console.log(relatedObjects)
-      console.log(objects![0].itemData?.variations)
+      console.log(relatedObjects);
+      console.log(objects![0].itemData?.variations);
       // Extract ITEM_VARIATION IDs
       if (relatedObjects && relatedObjects.length > 0) {
-          relatedObjects.forEach((obj) => {
-              if (obj.type === "ITEM_VARIATION") {
-                  itemVariationIds.push(obj.id);
-                }
-            });
-        }
-        
-        cursor = nextCursor;
+        relatedObjects.forEach((obj) => {
+          if (obj.type === "ITEM_VARIATION") {
+            itemVariationIds.push(obj.id);
+          }
+        });
+      }
+
+      cursor = nextCursor;
     } while (cursor);
-    
+
     // Now use itemVariationIds for inventory counts
     const inventoryApi = client.inventoryApi;
-    
+
     const CHUNK_SIZE = 250;
     console.log("running");
     console.log(itemVariationIds);
     for (let i = 0; i < itemVariationIds.length; i += CHUNK_SIZE) {
-        const chunkIds = itemVariationIds.slice(i, i + CHUNK_SIZE);
+      const chunkIds = itemVariationIds.slice(i, i + CHUNK_SIZE);
 
       const inventoryResponse = await inventoryApi.batchRetrieveInventoryCounts(
         {
@@ -84,5 +84,3 @@ async function fetchAllProducts(accessToken: string) {
     console.error("Error fetching inventory:", error);
   }
 }
-
-export { fetchAllProducts };
