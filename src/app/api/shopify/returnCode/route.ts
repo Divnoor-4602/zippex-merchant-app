@@ -1,14 +1,18 @@
-import { createWebhook, validateRequest } from "@/lib/shopify/utils";
 import { NextRequest, NextResponse } from "next/server";
+import crypto from "crypto";
+import { createWebhook, validateRequest } from "@/lib/shopify/utils";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
+
+  
 
   const isValidRequest = await validateRequest(request);
   if (!isValidRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+ 
   const code = searchParams.get("code");
   const shop = searchParams.get("shop");
   console.log("running");

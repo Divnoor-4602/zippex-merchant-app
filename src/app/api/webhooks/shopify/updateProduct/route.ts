@@ -1,18 +1,20 @@
 import {
-  addWebhookToMemory,
-  checkIfWebhookIsProcessed,
-  cleanUpMemory,
+  addWebhookToMemoryForUpdate,
+  checkIfWebhookIsProcessedForUpdate,
+  cleanUpMemoryForUpdate,
   extractDescription,
   fetchMerchantDataFromStoreUrl,
   getMerchantInventoryRef,
   validateWebhook,
 } from "@/lib/shopify/utils";
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/firebase/firebaseAdmin";
+import { getDb } from "@/lib/firebase/firebaseAdmin";
 import { Inventory } from "@/lib/types";
 import { Timestamp } from "firebase-admin/firestore";
 
 export async function POST(req: NextRequest, res: NextResponse) {
+  const db = await getDb();
+
   const webhookTopid = req.headers.get("X-Shopify-Topic");
   if (webhookTopid !== "products/update") {
     console.log("Topic not to be handled here");
@@ -68,8 +70,8 @@ export async function POST(req: NextRequest, res: NextResponse) {
 
   console.log("running before");
   //checking if webhook is already processed
-  cleanUpMemory();
-  if (checkIfWebhookIsProcessed(webhookData.id)) {
+  await cleanUpMemoryForUpdate();
+  if ((await checkIfWebhookIsProcessedForUpdate, webhookData.id)) {
     return NextResponse.json(
       { message: "Webhook already processed" },
       {
@@ -80,7 +82,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
   console.log("running after");
 
   // adding webhook to processed memory
-  addWebhookToMemory(webhookData.id, Date.now() + 2000);
+  await addWebhookToMemoryForUpdate(webhookData.id, Date.now() + 2000);
 
   // Get the shop URL from the headers
   const shopUrl = req.headers.get("x-shopify-shop-domain");
@@ -94,7 +96,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
     return NextResponse.json({ error: "Merchant not found" }, { status: 400 });
   }
 
-  const merchantInventory = getMerchantInventoryRef(merchantData.uid);
+  const merchantInventory = await getMerchantInventoryRef(merchantData.uid);
 
   console.log(webhookData);
 
@@ -131,7 +133,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
         fragility: 0,
         id: `${webhookData.id}-${variant.id}`,
         imageUrl: webhookData.image?.src ?? "",
-        longDescription: extractDescription(webhookData.body_html),
+        longDescription: await extractDescription(webhookData.body_html),
         price: variant.price,
         quantity: variant.inventory_quantity,
         totalOrders: 0,
@@ -169,7 +171,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
       fragility: 0,
       id: webhookData.id,
       imageUrl: webhookData.image?.src ?? "",
-      longDescription: extractDescription(webhookData.body_html),
+      longDescription: await extractDescription(webhookData.body_html),
       price: webhookData.variants[0].price,
       quantity: webhookData.variants[0].inventory_quantity,
       totalOrders: 0,

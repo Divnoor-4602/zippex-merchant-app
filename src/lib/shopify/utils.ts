@@ -1,26 +1,65 @@
 import { NextRequest } from "next/server";
 import crypto from "crypto";
-import { db } from "../firebase/firebaseAdmin";
+import { getDb } from "../firebase/firebaseAdmin";
 import { Inventory } from "../types";
 import * as cheerio from "cheerio";
 
-const processedWebhooks: { webhookId: string; expiryTime: number }[] = [];
+const db = await getDb();
 
-export const cleanUpMemory = () => {
+const processedWebhooksForDelete: { webhookId: string; expiryTime: number }[] =
+  [];
+
+export const cleanUpMemoryForDelete = async () => {
   const currentTime = Date.now();
-  processedWebhooks.forEach((webhook) => {
+  processedWebhooksForDelete.forEach((webhook) => {
     if (currentTime > webhook.expiryTime) {
-      processedWebhooks.splice(processedWebhooks.indexOf(webhook), 1);
+      processedWebhooksForDelete.splice(
+        processedWebhooksForDelete.indexOf(webhook),
+        1
+      );
     }
   });
 };
 
-export const addWebhookToMemory = (webhookId: string, expiryTime: number) => {
-  processedWebhooks.push({ webhookId, expiryTime });
+export const addWebhookToMemoryForDelete = async (
+  webhookId: string,
+  expiryTime: number
+) => {
+  processedWebhooksForDelete.push({ webhookId, expiryTime });
 };
 
-export const checkIfWebhookIsProcessed = (webhookId: string) => {
-  return processedWebhooks.some((webhook) => webhook.webhookId === webhookId);
+export const checkIfWebhookIsProcessedForDelete = async (webhookId: string) => {
+  return processedWebhooksForDelete.some(
+    (webhook) => webhook.webhookId === webhookId
+  );
+};
+
+const processedWebhooksForUpdate: { webhookId: string; expiryTime: number }[] =
+  [];
+
+export const cleanUpMemoryForUpdate = async () => {
+  const currentTime = Date.now();
+  processedWebhooksForUpdate.forEach((webhook) => {
+    if (currentTime > webhook.expiryTime) {
+      processedWebhooksForUpdate.splice(
+        processedWebhooksForUpdate.indexOf(webhook),
+        1
+      );
+    }
+  });
+};
+
+export const addWebhookToMemoryForUpdate = async (
+  webhookId: string,
+  expiryTime: number
+) => {
+  processedWebhooksForUpdate.push({ webhookId, expiryTime });
+};
+
+export const checkIfWebhookIsProcessedForUpdate = async (webhookId: string) => {
+  return processedWebhooksForUpdate.some(
+    (webhook) => webhook.webhookId === webhookId
+  );
 };
 
 export const validateRequest = async (req: NextRequest) => {
@@ -93,15 +132,6 @@ export const validateWebhook = async (rawBody: string, req: NextRequest) => {
     console.log("Webhook verification failed");
   }
 };
-
-export const getStoreDetailsByShop = async (shop: string) => {
-  return false;
-};
-
-export const checkAccessTokenValidity = (storeDetails: any) => {
-  return true;
-};
-
 //creating webhook
 export async function createWebhook(
   shop: string,
@@ -166,7 +196,7 @@ export const fetchMerchantDataFromStoreUrl = async (shopUrl: string) => {
   }
 };
 
-export const getMerchantInventoryRef = (merchantId: string) => {
+export const getMerchantInventoryRef = async (merchantId: string) => {
   // Reference to the inventory subcollection within the merchant's document
   const inventoryRef = db
     .collection("merchants")
@@ -176,78 +206,78 @@ export const getMerchantInventoryRef = (merchantId: string) => {
 };
 
 //Create a product if done in shopify
-const createProductShopifyToZippex = async (
-  productData: Inventory,
-  merchantId: string
-) => {
-  try {
-    const productsRef = db.collection("products");
-    const productDocRef = productsRef.doc(productData.id);
-    await productDocRef.set(productData);
-    console.log("Product created:", productDocRef.id);
+// const createProductShopifyToZippex = async (
+//   productData: Inventory,
+//   merchantId: string
+// ) => {
+//   try {
+//     const productsRef = db.collection("products");
+//     const productDocRef = productsRef.doc(productData.id);
+//     await productDocRef.set(productData);
+//     console.log("Product created:", productDocRef.id);
 
-    const merchantsRef = db.collection("merchants");
-    const merchantDocRef = merchantsRef.doc(merchantId);
-    await merchantDocRef.update({
-      products: {
-        [productData.id]: true,
-      },
-    });
-    console.log("Merchant updated:", merchantDocRef.id);
-  } catch (error) {
-    console.error("Error creating product:", error);
-  }
-};
+//     const merchantsRef = db.collection("merchants");
+//     const merchantDocRef = merchantsRef.doc(merchantId);
+//     await merchantDocRef.update({
+//       products: {
+//         [productData.id]: true,
+//       },
+//     });
+//     console.log("Merchant updated:", merchantDocRef.id);
+//   } catch (error) {
+//     console.error("Error creating product:", error);
+//   }
+// };
 
-//Update a product if done in shopify
-const updateProductShopifyToZippex = async (
-  productData: Inventory,
-  merchantId: string
-) => {
-  try {
-    const productsRef = db.collection("products");
-    const productDocRef = productsRef.doc(productData.id);
-    await productDocRef.update(productData);
-    console.log("Product updated:", productDocRef.id);
+// //Update a product if done in shopify
+// const updateProductShopifyToZippex = async (
+//   productData: Inventory,
+//   merchantId: string
+// ) => {
+//   try {
+//     const productsRef = db.collection("products");
+//     const productDocRef = productsRef.doc(productData.id);
+//     await productDocRef.update(productData);
+//     console.log("Product updated:", productDocRef.id);
 
-    const merchantsRef = db.collection("merchants");
-    const merchantDocRef = merchantsRef.doc(merchantId);
-    await merchantDocRef.update({
-      products: {
-        [productData.id]: true,
-      },
-    });
-    console.log("Merchant updated:", merchantDocRef.id);
-  } catch (error) {
-    console.error("Error updating product:", error);
-  }
-};
+//     const merchantsRef = db.collection("merchants");
+//     const merchantDocRef = merchantsRef.doc(merchantId);
+//     await merchantDocRef.update({
+//       products: {
+//         [productData.id]: true,
+//       },
+//     });
+//     console.log("Merchant updated:", merchantDocRef.id);
+//   } catch (error) {
+//     console.error("Error updating product:", error);
+//   }
+// };
 
-//Delete a product if done in shopify
-const deleteProductShopifyToZippex = async (
-  productId: string,
-  merchantId: string
-) => {
-  try {
-    const productsRef = db.collection("products");
-    const productDocRef = productsRef.doc(productId);
-    await productDocRef.delete();
-    console.log("Product deleted:", productDocRef.id);
+// //Delete a product if done in shopify
+// const deleteProductShopifyToZippex = async (
+//   productId: string,
+//   merchantId: string
+// ) => {
+//   try {
+//     const productsRef = db.collection("products");
+//     const productDocRef = productsRef.doc(productId);
+//     await productDocRef.delete();
+//     console.log("Product deleted:", productDocRef.id);
 
-    const merchantsRef = db.collection("merchants");
-    const merchantDocRef = merchantsRef.doc(merchantId);
-    await merchantDocRef.update({
-      products: {
-        // [productId]: FieldValue.delete(),
-      },
-    });
-    console.log("Merchant updated:", merchantDocRef.id);
-  } catch (error) {
-    console.error("Error deleting product:", error);
-  }
-};
+//     const merchantsRef = db.collection("merchants");
+//     const merchantDocRef = merchantsRef.doc(merchantId);
+//     await merchantDocRef.update({
+//       products: {
+//         // [productId]: FieldValue.delete(),
+//       },
+//     });
+//     console.log("Merchant updated:", merchantDocRef.id);
+//   } catch (error) {
+//     console.error("Error deleting product:", error);
+//   }
+// };
 
-export function extractDescription(html: string) {
+export async function extractDescription(html: string) {
   // Load the HTML string into cheerio
   const $ = cheerio.load(html);
 

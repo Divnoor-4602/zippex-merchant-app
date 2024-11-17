@@ -2,6 +2,7 @@ import { validateWebhook } from "@/lib/shopify/utils";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
+
   let rawBody = "";
 
   if (req.body === null) {

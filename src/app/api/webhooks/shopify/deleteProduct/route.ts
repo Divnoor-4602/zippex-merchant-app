@@ -1,31 +1,19 @@
-import { db } from "@/lib/firebase/firebaseAdmin";
+import { getDb } from "@/lib/firebase/firebaseAdmin";
 import {
+  addWebhookToMemoryForDelete,
+  checkIfWebhookIsProcessedForDelete,
+  cleanUpMemoryForDelete,
   fetchMerchantDataFromStoreUrl,
   getMerchantInventoryRef,
   validateWebhook,
 } from "@/lib/shopify/utils";
+
+
 import { NextRequest, NextResponse } from "next/server";
 
-const processedWebhooks: { webhookId: string; expiryTime: number }[] = [];
-
-const cleanUpMemory = () => {
-  const currentTime = Date.now();
-  processedWebhooks.forEach((webhook) => {
-    if (currentTime > webhook.expiryTime) {
-      processedWebhooks.splice(processedWebhooks.indexOf(webhook), 1);
-    }
-  });
-};
-
-const addWebhookToMemory = (webhookId: string, expiryTime: number) => {
-  processedWebhooks.push({ webhookId, expiryTime });
-};
-
-const checkIfWebhookIsProcessed = (webhookId: string) => {
-  return processedWebhooks.some((webhook) => webhook.webhookId === webhookId);
-};
 
 export async function POST(req: NextRequest, res: NextResponse) {
+  const db = await getDb();
   const webhookTopid = req.headers.get("X-Shopify-Topic");
   if (webhookTopid !== "products/delete") {
     return NextResponse.json(
@@ -78,8 +66,8 @@ export async function POST(req: NextRequest, res: NextResponse) {
   }
 
   //checking if webhook is already processed
-  cleanUpMemory();
-  if (checkIfWebhookIsProcessed(webhookData.id)) {
+  await cleanUpMemoryForDelete();
+  if (await checkIfWebhookIsProcessedForDelete(webhookData.id)) {
     return NextResponse.json(
       { message: "Webhook already processed" },
       {
@@ -89,7 +77,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
   }
 
   //adding webhook to processed memory
-  addWebhookToMemory(webhookData.id, Date.now() + 2000);
+  await addWebhookToMemoryForDelete(webhookData.id, Date.now() + 2000);
 
   // Get the shop URL from the headers
   const shopUrl = req.headers.get("x-shopify-shop-domain");
@@ -104,7 +92,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
   }
 
   try {
-    const merchantInventory = getMerchantInventoryRef(merchantData.uid);
+    const merchantInventory = await getMerchantInventoryRef(merchantData.uid);
 
     // Query the inventory where 'productVariantId' starts with the webhookId
     const querySnapshot = await merchantInventory
