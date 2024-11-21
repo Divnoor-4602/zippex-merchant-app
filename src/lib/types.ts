@@ -1,3 +1,5 @@
+import { serverTimestamp } from "firebase/firestore";
+
 export type Inventory = {
   name: string;
   category: string;
@@ -9,7 +11,10 @@ export type Inventory = {
   price: number;
   quantity: number;
   totalOrders: number;
-  createdAt: { seconds: number; nanoseconds: number } | null; // Not null timestamp
+  createdAt:
+    | { seconds: number; nanoseconds: number }
+    | null
+    | ReturnType<typeof serverTimestamp>; // Not null timestamp
 };
 
 export type Order = {

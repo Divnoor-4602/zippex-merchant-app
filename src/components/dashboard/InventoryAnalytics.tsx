@@ -106,7 +106,7 @@ const InventoryAnalytics = ({
         if (item.quantity < 10 && item.quantity > 0)
           bufferedArray.push({
             name: item.name,
-            quantity: item.quantity,
+            quantity: item?.quantity ?? 0,
           });
       });
       bufferedArray.sort((a, b) => a.quantity - b.quantity);

@@ -45,18 +45,32 @@ export async function GET(req: NextRequest) {
     console.log("Refresh token:", refreshToken);
     console.log("Expires at:", expiresAt);
 
+    if (!accessToken || !refreshToken || !expiresAt)
+      throw new Error("Missing data");
+
+    cookies().set("access_token", accessToken, {
+      httpOnly: true,
+      secure: true,
+      path: "/",
+      maxAge: 300,
+    });
+    cookies().set("refresh_token", refreshToken, {
+      httpOnly: true,
+      secure: true,
+      path: "/",
+      maxAge: 300,
+    });
+    cookies().set("expires_at", expiresAt, {
+      httpOnly: true,
+      secure: true,
+      path: "/",
+      maxAge: 300,
+    });
+
     //redirect to front end to user sign in token
 
     return NextResponse.redirect(
-      process.env.BASE_URL! +
-        "dashboard/port-InventorySquare?access_token=" +
-        accessToken +
-        "&refresh_token=" +
-        refreshToken +
-        "&expires_at=" +
-        expiresAt +
-        "&square_merchant_id=" +
-        squareMerchantId
+      process.env.BASE_URL! + "dashboard/port-InventorySquare"
     );
   } catch (error) {
     console.error("OAuth Error:", error);

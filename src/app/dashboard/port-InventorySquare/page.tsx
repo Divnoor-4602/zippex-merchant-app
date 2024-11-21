@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { fetchAllProducts } from "@/lib/actions/square.action";
+import { portInventoryAndReturnData } from "@/lib/actions/square.action";
 import { auth, db } from "@/lib/firebase";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
@@ -14,10 +14,10 @@ const PortInventoryPageSquare = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const merchantDocRef = doc(db, "merchants", currentUser!.uid);
-  const accessToken = searchParams.get("access_token");
-  const squareMerchantId = searchParams.get("square_merchant_id");
-  const refreshToken = searchParams.get("refresh_token");
-  const expiresAt = searchParams.get("expires_at");
+  // const accessToken = searchParams.get("access_token");
+  // const squareMerchantId = searchParams.get("square_merchant_id");
+  // const refreshToken = searchParams.get("refresh_token");
+  // const expiresAt = searchParams.get("expires_at");
 
   const { data: merchantData, isLoading } = useQuery({
     queryKey: ["merchantData"],
@@ -32,18 +32,21 @@ const PortInventoryPageSquare = () => {
       await updateDoc(merchantDocRef, {
         ...merchantData,
         integrationType: "square",
-        squareAccessToken: accessToken,
-        squareMerchantId: squareMerchantId,
-        squareRefreshToken: refreshToken,
-        squareExpiresAt: expiresAt,
+        // squareAccessToken: accessToken,
+        // squareMerchantId: squareMerchantId,
+        // squareRefreshToken: refreshToken,
+        // squareExpiresAt: expiresAt,
       });
 
       try {
-        if (!accessToken || !squareMerchantId || !expiresAt)
-          throw new Error("Missing data");
-        const products = await fetchAllProducts(accessToken);
-        console.log(products);
-        //   await updateMerchantInventory(currentUser!.uid, products);
+        const result = await portInventoryAndReturnData(currentUser!.uid);
+
+        const squareMerchantId = result?.squareMerchantId;
+
+        if (squareMerchantId) {
+          // handle squareMerchantId logic
+        }
+
       } catch (error) {
         console.error("Error:", error);
       }
