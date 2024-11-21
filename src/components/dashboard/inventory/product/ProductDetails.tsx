@@ -8,7 +8,7 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/card";
-import { auth} from "@/lib/firebase";
+import { auth } from "@/lib/firebase";
 import { ChevronLeft } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -191,7 +191,11 @@ const ProductDetails = () => {
           </CardHeader>
           <CardContent className="flex w-full justify-center items-center">
             <Image
-              src={productDetails!.imageUrl}
+              src={
+                productDetails!.imageUrl.length === 0
+                  ? "/images/item_placeholder.jpg"
+                  : productDetails!.imageUrl
+              }
               alt={"product details product-image"}
               width={250}
               height={250}

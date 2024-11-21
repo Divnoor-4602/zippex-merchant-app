@@ -109,7 +109,7 @@ const Page = () => {
             price: item.price,
             stock: item.quantity,
             fragility: item.fragility,
-            image: item.imageUrl,
+            image: item.imageUrl.length === 0 ? "/images/item_placeholder.jpg" : item.imageUrl,
             createdAt: item.createdAt.seconds,
             merchantId: merchantId,
             onDeleteProduct: () => server_deleteProduct(item.id),

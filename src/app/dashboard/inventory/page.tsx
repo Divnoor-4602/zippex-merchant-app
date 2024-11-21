@@ -55,7 +55,10 @@ const Page = () => {
         totalInventory.map((item: any, index: number) => {
           return {
             id: item?.id,
-            image: item?.imageUrl,
+            image:
+              item?.imageUrl.length === 0
+                ? "/images/item_placeholder.jpg"
+                : item?.imageUrl,
             name: item?.name,
             totalOrders: item?.totalOrders,
             price: item?.price,
@@ -103,7 +106,7 @@ const Page = () => {
 
       return { totalInventory, lowStockChartData, mostOrderedChartData };
     },
-    //!fix this 
+    //!fix this
     // refetchInterval: 5000,
   });
 
