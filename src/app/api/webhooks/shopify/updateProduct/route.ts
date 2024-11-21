@@ -71,7 +71,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
   console.log("running before");
   //checking if webhook is already processed
   await cleanUpMemoryForUpdate();
-  if ((await checkIfWebhookIsProcessedForUpdate, webhookData.id)) {
+  if (await checkIfWebhookIsProcessedForUpdate(webhookData.id)) {
     return NextResponse.json(
       { message: "Webhook already processed" },
       {
