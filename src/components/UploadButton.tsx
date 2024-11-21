@@ -16,6 +16,7 @@ import { Cloud, Loader2, File } from "lucide-react";
 
 interface UploadButtonProps {
   handleLogoUploaded: (url: string) => void;
+  uploadMessage?: string;
 }
 
 const MAX_FILE_SIZE = 8 * 1024 * 1024; // 8 MB
@@ -100,7 +101,10 @@ const UploadDropzone = ({
   );
 };
 
-const UploadButton: React.FC<UploadButtonProps> = ({ handleLogoUploaded }) => {
+const UploadButton: React.FC<UploadButtonProps> = ({
+  handleLogoUploaded,
+  uploadMessage = "Upload Document",
+}) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   return (
@@ -111,7 +115,7 @@ const UploadButton: React.FC<UploadButtonProps> = ({ handleLogoUploaded }) => {
       }}
     >
       <DialogTrigger asChild onClick={() => setIsOpen(true)}>
-        <Button variant={"outline"}>Upload document</Button>
+        <Button variant={"outline"}>{uploadMessage}</Button>
       </DialogTrigger>
       <DialogContent aria-describedby="dialog content">
         <DialogTitle className="hidden"></DialogTitle>
