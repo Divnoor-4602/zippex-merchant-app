@@ -11,6 +11,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/firebase/firebaseAdmin";
 import { Inventory } from "@/lib/types";
 import { Timestamp } from "firebase-admin/firestore";
+import { getShopifyAccessTokenByShop } from "@/lib/actions/shopify.action";
 
 export async function POST(req: NextRequest, res: NextResponse) {
   const db = await getDb();
@@ -67,8 +68,73 @@ export async function POST(req: NextRequest, res: NextResponse) {
       { status: 400 }
     );
   }
+  // Get the shop URL from the headers
+  const shopUrl = req.headers.get("x-shopify-shop-domain");
+  if (!shopUrl) {
+    return NextResponse.json({ error: "Missing shop URL" }, { status: 400 });
+  }
 
   console.log("running before");
+  // Check if the product was created via API
+  const isCreatedByAPI =
+    webhookData.tags && webhookData.tags.includes("created-through-zippex");
+
+  if (isCreatedByAPI) {
+    const updateProductQuery = `
+    mutation($input: ProductInput!) {
+      productUpdate(input: $input) {
+        product {
+          id
+          tags
+        }
+        userErrors {
+          field
+          message
+        }
+      }
+    }
+  `;
+
+    const productInput = {
+      id: webhookData.admin_graphql_api_id,
+      tags: [], // Remove all tags or specify tags to retain
+    };
+
+    const accessToken = await getShopifyAccessTokenByShop(shopUrl);
+
+    const response = await fetch(
+      `https://${shopUrl}/admin/api/2023-07/graphql.json`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Shopify-Access-Token": accessToken,
+        },
+        body: JSON.stringify({
+          query: updateProductQuery,
+          variables: { input: productInput },
+        }),
+      }
+    );
+    const responseBody = await response.json();
+
+    if (
+      responseBody.errors ||
+      responseBody.data.productUpdate.userErrors.length
+    ) {
+      console.error(
+        "GraphQL errors:",
+        responseBody.errors || responseBody.data.productUpdate.userErrors
+      );
+      return NextResponse.json(
+        { error: "Failed to update product via GraphQL." },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ message: "Product updated successfully." });
+  }
+
   //checking if webhook is already processed
   await cleanUpMemoryForUpdate();
   if (await checkIfWebhookIsProcessedForUpdate(webhookData.id)) {
@@ -84,11 +150,6 @@ export async function POST(req: NextRequest, res: NextResponse) {
   // adding webhook to processed memory
   await addWebhookToMemoryForUpdate(webhookData.id, Date.now() + 2000);
 
-  // Get the shop URL from the headers
-  const shopUrl = req.headers.get("x-shopify-shop-domain");
-  if (!shopUrl) {
-    return NextResponse.json({ error: "Missing shop URL" }, { status: 400 });
-  }
   // Process the webhook data as needed
 
   const merchantData = await fetchMerchantDataFromStoreUrl(shopUrl);
@@ -128,13 +189,13 @@ export async function POST(req: NextRequest, res: NextResponse) {
     for (const variant of webhookData.variants) {
       const productData: Inventory = {
         name: `${webhookData.title} - ${variant.title}`,
-        category: webhookData.category?.name,
+        category: webhookData.category?.name ?? "General",
         description: webhookData.title,
         fragility: 0,
         id: `${webhookData.id}-${variant.id}`,
         imageUrl: webhookData.image?.src ?? "",
         longDescription: await extractDescription(webhookData.body_html),
-        price: variant.price,
+        price: parseFloat(variant.price),
         quantity: variant.inventory_quantity,
         totalOrders: 0,
         createdAt: Timestamp.fromDate(new Date(variant.updated_at)),
@@ -166,13 +227,13 @@ export async function POST(req: NextRequest, res: NextResponse) {
 
     const productData: Inventory = {
       name: webhookData.title,
-      category: webhookData.category?.name,
+      category: webhookData.category?.name ?? "General",
       description: webhookData.title,
       fragility: 0,
       id: webhookData.id,
       imageUrl: webhookData.image?.src ?? "",
       longDescription: await extractDescription(webhookData.body_html),
-      price: webhookData.variants[0].price,
+      price: parseFloat(webhookData.variants[0].price),
       quantity: webhookData.variants[0].inventory_quantity,
       totalOrders: 0,
       createdAt: Timestamp.fromDate(new Date(webhookData.updated_at)),

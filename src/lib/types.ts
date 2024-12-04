@@ -7,7 +7,7 @@ export type Inventory = {
   fragility: number;
   id: string;
   imageUrl: string;
-  longDescription: string;
+  longDescription?: string;
   price: number;
   quantity: number;
   totalOrders: number;

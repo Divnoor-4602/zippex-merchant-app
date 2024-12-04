@@ -101,7 +101,7 @@ const Page = () => {
   useEffect(() => {
     if (totalInventory) {
       setAllProducts((prev: any) =>
-        totalInventory.map((item: any, index: number) => {
+        totalInventory?.map((item: any, index: number) => {
           return {
             id: item.id,
             name: item.name,

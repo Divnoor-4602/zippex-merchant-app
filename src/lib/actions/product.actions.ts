@@ -19,6 +19,7 @@ import {
   GetProductProps,
 } from "./shared.types";
 import { description } from "@/components/dashboard/inventory/MostOrderedGraph";
+import { addProductToShopify } from "./shopify.action";
 
 interface DeleteProductProps {
   merchantId: string;
@@ -43,12 +44,27 @@ export async function addProduct(params: AddProductProps) {
       totalOrders,
       merchantId,
     } = params;
-
+    console.log(category);
     // get the collection reference
     const productRef = collection(db, "merchants", merchantId, "inventory");
 
+    // Get the merchant's document reference
+    const merchantDocRef = doc(db, "merchants", merchantId);
+
+    // Fetch the merchant information
+    const merchantDocSnap = await getDoc(merchantDocRef);
+
+    if (!merchantDocSnap.exists()) {
+      throw new Error("Merchant not found");
+    }
+
+    const merchantData = merchantDocSnap.data();
+
+    // Check if the merchant has Shopify or Square account
+    const integrationType = merchantData.integrationType;
+
     // add the product data
-    await addDoc(productRef, {
+    const docRef = await addDoc(productRef, {
       name,
       description,
       quantity,
@@ -59,6 +75,34 @@ export async function addProduct(params: AddProductProps) {
       createdAt,
       totalOrders,
     });
+
+    const productData = {
+      id: docRef.id,
+      name,
+      description,
+      quantity,
+      price,
+      fragility,
+      category,
+      imageUrl,
+      createdAt,
+      totalOrders,
+    };
+
+    if (integrationType === "shopify") {
+      const shopifyProductId = await addProductToShopify(
+        merchantId,
+        productData
+      );
+      // update the id of the product in the inventory collection
+      const response = await updateDoc(docRef, {
+        id: shopifyProductId,
+      });
+      console.log("Id Set", response);
+    } else if (integrationType === "square") {
+      //Adding product to square logic here
+      console.log("square");
+    }
   } catch (error) {
     console.log(error);
     throw new Error("An error occurred while adding the product");
