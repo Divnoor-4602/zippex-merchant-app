@@ -63,21 +63,8 @@ export async function addProduct(params: AddProductProps) {
     // Check if the merchant has Shopify or Square account
     const integrationType = merchantData.integrationType;
 
-    // add the product data
-    const docRef = await addDoc(productRef, {
-      name,
-      description,
-      quantity,
-      price,
-      fragility,
-      category,
-      imageUrl,
-      createdAt,
-      totalOrders,
-    });
-
     const productData = {
-      id: docRef.id,
+      // id: docRef.id,
       name,
       description,
       quantity,
@@ -95,13 +82,26 @@ export async function addProduct(params: AddProductProps) {
         productData
       );
       // update the id of the product in the inventory collection
-      const response = await updateDoc(docRef, {
+      await addDoc(productRef, {
+        ...productData,
         id: shopifyProductId,
       });
-      console.log("Id Set", response);
     } else if (integrationType === "square") {
       //Adding product to square logic here
       console.log("square");
+    } else {
+      // add the product data
+      const docRef = await addDoc(productRef, {
+        name,
+        description,
+        quantity,
+        price,
+        fragility,
+        category,
+        imageUrl,
+        createdAt,
+        totalOrders,
+      });
     }
   } catch (error) {
     console.log(error);

@@ -180,7 +180,7 @@ export async function fetchAllProducts(
 //function to add product from zippex -> shopify
 export const addProductToShopify = async (
   merchantId: string,
-  inventoryData: Inventory | any
+  inventoryData: Omit<Inventory, "id">
 ) => {
   const accessToken = await getShopifyAccessTokenById(merchantId);
   const shopDomain = await getShopifyShopDomain(merchantId);
@@ -223,8 +223,6 @@ export const addProductToShopify = async (
     variants: [
       {
         price: inventoryData.price.toFixed(2),
-        // inventoryQuantity: inventoryData.quantity,
-        // sku: inventoryData.id,
       },
     ],
     tags: ["created-through-zippex"],
