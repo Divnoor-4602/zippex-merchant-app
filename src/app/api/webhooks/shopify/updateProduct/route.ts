@@ -189,7 +189,8 @@ export async function POST(req: NextRequest, res: NextResponse) {
     for (const variant of webhookData.variants) {
       const productData: Inventory = {
         name: `${webhookData.title} - ${variant.title}`,
-        category: webhookData.category?.name ?? "General",
+        category:
+          webhookData.category?.name ?? webhookData.product_type ?? "General",
         description: await extractDescription(webhookData.body_html),
         fragility: 0,
         id: `${webhookData.id}-${variant.id}`,
