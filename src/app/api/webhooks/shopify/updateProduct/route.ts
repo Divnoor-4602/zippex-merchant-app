@@ -190,16 +190,17 @@ export async function POST(req: NextRequest, res: NextResponse) {
       const productData: Inventory = {
         name: `${webhookData.title} - ${variant.title}`,
         category: webhookData.category?.name ?? "General",
-        description: webhookData.title,
+        description: await extractDescription(webhookData.body_html),
         fragility: 0,
         id: `${webhookData.id}-${variant.id}`,
         imageUrl: webhookData.image?.src ?? "",
-        longDescription: await extractDescription(webhookData.body_html),
         price: parseFloat(variant.price),
         quantity: variant.inventory_quantity,
         totalOrders: 0,
         createdAt: Timestamp.fromDate(new Date(variant.updated_at)),
       };
+
+      console.log(productData);
 
       await merchantInventory
         .doc(`${webhookData.id}-${variant.id}`)
@@ -228,11 +229,10 @@ export async function POST(req: NextRequest, res: NextResponse) {
     const productData: Inventory = {
       name: webhookData.title,
       category: webhookData.category?.name ?? "General",
-      description: webhookData.title,
+      description: await extractDescription(webhookData.body_html),
       fragility: 0,
       id: webhookData.id,
       imageUrl: webhookData.image?.src ?? "",
-      longDescription: await extractDescription(webhookData.body_html),
       price: parseFloat(webhookData.variants[0].price),
       quantity: webhookData.variants[0].inventory_quantity,
       totalOrders: 0,
@@ -243,8 +243,9 @@ export async function POST(req: NextRequest, res: NextResponse) {
       await merchantInventory
         .doc(webhookData.id.toString())
         .update(productData);
+    } else {
+      await merchantInventory.doc(webhookData.id.toString()).set(productData);
     }
-    await merchantInventory.doc(webhookData.id.toString()).set(productData);
   }
 
   return NextResponse.json({ message: "Webhook woorking" }, { status: 200 });

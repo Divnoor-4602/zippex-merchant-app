@@ -399,6 +399,56 @@ export const addProductToShopify = async (
   }
 };
 
+//fucntion to delete a product from zippex -> shopify
+// export const deleteProductFromShopify = async (merchantId: string) => {
+//   const accessToken = await getShopifyAccessTokenById(merchantId);
+//   const shopDomain = await getShopifyShopDomain(merchantId);
+
+//   const mutation = `
+//     mutation deleteProduct($id: ID!) {
+//       productDelete(id: $id) {
+//         deletedId
+//         userErrors {
+//           field
+//           message
+//         }
+//       }
+//     }
+//   `;
+
+//   try {
+//     const response = await fetch(
+//       `https://${shopDomain}/admin/api/2023-07/graphql.json`,
+//       {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//           "X-Shopify-Access-Token": accessToken,
+//         },
+//         body: JSON.stringify({ query: mutation, variables: { id: id } }),
+//       }
+//     );
+
+//     const responseBody = await response.json();
+
+//     if (
+//       responseBody.errors ||
+//       responseBody.data.productDelete.userErrors.length
+//     ) {
+//       console.error(
+//         "GraphQL errors:",
+//         responseBody.errors || responseBody.data.productDelete.userErrors
+//       );
+//       throw new Error("Failed to delete product via GraphQL.");
+//     }
+
+//     return responseBody.data.productDelete.deletedId;
+//   } catch (error) {
+//     console.error("Error deleting product:", error);
+//     throw error;
+//   }
+// };
+
 //helper function to extract the numeric id from the gid
 function extractNumericId(gid: string): string {
   // gid is in the format 'gid://shopify/ResourceType/ID'
