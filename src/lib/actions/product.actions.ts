@@ -19,7 +19,10 @@ import {
   GetProductProps,
 } from "./shared.types";
 import { description } from "@/components/dashboard/inventory/MostOrderedGraph";
-import { addProductToShopify } from "./shopify.action";
+import {
+  addProductToShopify,
+  deleteProductFromShopify,
+} from "./shopify.action";
 
 interface DeleteProductProps {
   merchantId: string;
@@ -203,10 +206,36 @@ export async function deleteProduct(props: DeleteProductProps) {
 
   try {
     // reference the document in the subcollection
-    const productRef = doc(db, "merchants", merchantId, "inventory", productId);
-
+    const productRef = doc(
+      db,
+      "merchants",
+      merchantId,
+      "inventory",
+      productId.toString()
+    );
     // delete the product
     await deleteDoc(productRef);
+
+    // Get the merchant's document reference
+    const merchantDocRef = doc(db, "merchants", merchantId);
+
+    // Fetch the merchant information
+    const merchantDocSnap = await getDoc(merchantDocRef);
+
+    if (!merchantDocSnap.exists()) {
+      throw new Error("Merchant not found");
+    }
+
+    const merchantData = merchantDocSnap.data();
+    // Check if the merchant has Shopify or Square account
+    const integrationType = merchantData.integrationType;
+
+    if (integrationType === "shopify") {
+      await deleteProductFromShopify(merchantId, productId.toString());
+    } else if (integrationType === "square") {
+      //Deleting product from square logic here
+      console.log("square");
+    }
   } catch (error) {
     console.log(error);
     throw new Error("An error occurred while deleting the product");

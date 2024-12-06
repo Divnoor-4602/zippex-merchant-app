@@ -400,54 +400,128 @@ export const addProductToShopify = async (
 };
 
 //fucntion to delete a product from zippex -> shopify
-// export const deleteProductFromShopify = async (merchantId: string) => {
-//   const accessToken = await getShopifyAccessTokenById(merchantId);
-//   const shopDomain = await getShopifyShopDomain(merchantId);
+export const deleteProductFromShopify = async (
+  merchantId: string,
+  productId: string
+) => {
+  //1. Delete Whole Product
+  //2. Delete Variants
+  const accessToken = await getShopifyAccessTokenById(merchantId);
+  const shopDomain = await getShopifyShopDomain(merchantId);
+  const productIdArray = productId.split("-");
 
-//   const mutation = `
-//     mutation deleteProduct($id: ID!) {
-//       productDelete(id: $id) {
-//         deletedId
-//         userErrors {
-//           field
-//           message
-//         }
-//       }
-//     }
-//   `;
+  if (productIdArray.length === 1) {
+    //Delete the whole product
+    const mutation = `
+      mutation deleteProduct($input: ProductDeleteInput!) {
+        productDelete(input: $input) {
+          deletedProductId
+          userErrors {
+            field
+            message
+          }
+        }
+      }
+    `;
 
-//   try {
-//     const response = await fetch(
-//       `https://${shopDomain}/admin/api/2023-07/graphql.json`,
-//       {
-//         method: "POST",
-//         headers: {
-//           "Content-Type": "application/json",
-//           "X-Shopify-Access-Token": accessToken,
-//         },
-//         body: JSON.stringify({ query: mutation, variables: { id: id } }),
-//       }
-//     );
+    try {
+      const response = await fetch(
+        `https://${shopDomain}/admin/api/2023-07/graphql.json`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Shopify-Access-Token": accessToken,
+          },
+          body: JSON.stringify({
+            query: mutation,
+            variables: { input: { id: `gid://shopify/Product/${productId}` } },
+          }),
+        }
+      );
 
-//     const responseBody = await response.json();
+      const responseBody = await response.json();
 
-//     if (
-//       responseBody.errors ||
-//       responseBody.data.productDelete.userErrors.length
-//     ) {
-//       console.error(
-//         "GraphQL errors:",
-//         responseBody.errors || responseBody.data.productDelete.userErrors
-//       );
-//       throw new Error("Failed to delete product via GraphQL.");
-//     }
+      if (
+        responseBody.errors ||
+        responseBody.data.productDelete.userErrors.length
+      ) {
+        console.error(
+          "GraphQL errors:",
+          responseBody.errors || responseBody.data.productDelete.userErrors
+        );
+        throw new Error("Failed to delete product via GraphQL.");
+      }
 
-//     return responseBody.data.productDelete.deletedId;
-//   } catch (error) {
-//     console.error("Error deleting product:", error);
-//     throw error;
-//   }
-// };
+      return responseBody.data.productDelete.deletedId;
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      throw error;
+    }
+  } else {
+    //Delete the variant and get back the updated product
+    const mutation = `
+      mutation deleteProduct($productId: ID!, $variantsIds: [ID!]!) {
+        productVariantsBulkDelete( productId: $productId, variantsIds: $variantsIds) {
+          product {
+            id
+            variants(first: 10) {
+            nodes {
+              id
+              title
+            }
+          }
+          }
+          userErrors {
+            field
+            message
+          }
+        }
+      }
+    `;
+
+    try {
+      const response = await fetch(
+        `https://${shopDomain}/admin/api/2023-07/graphql.json`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Shopify-Access-Token": accessToken,
+          },
+          body: JSON.stringify({
+            query: mutation,
+            variables: {
+              productId: `gid://shopify/Product/${productId}`,
+              variantsIds: [
+                `gid://shopify/ProductVariant/${productIdArray[1]}`,
+              ],
+            },
+          }),
+        }
+      );
+
+      const responseBody = await response.json();
+
+      if (
+        responseBody.errors ||
+        responseBody.data.productVariantsBulkDelete.userErrors.length
+      ) {
+        console.error(
+          "GraphQL errors:",
+          responseBody.errors ||
+            responseBody.data.productVariantsBulkDelete.userErrors
+        );
+        throw new Error("Failed to delete product via GraphQL.");
+      }
+
+      return responseBody.data.productVariantsBulkDelete.deletedId;
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      throw error;
+    }
+  }
+};
 
 //helper function to extract the numeric id from the gid
 function extractNumericId(gid: string): string {

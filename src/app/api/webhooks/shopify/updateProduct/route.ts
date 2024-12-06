@@ -232,7 +232,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
       category: webhookData.category?.name ?? "General",
       description: await extractDescription(webhookData.body_html),
       fragility: 0,
-      id: webhookData.id,
+      id: webhookData.id.toString(),
       imageUrl: webhookData.image?.src ?? "",
       price: parseFloat(webhookData.variants[0].price),
       quantity: webhookData.variants[0].inventory_quantity,
