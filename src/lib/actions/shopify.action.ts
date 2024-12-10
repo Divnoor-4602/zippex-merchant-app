@@ -3,6 +3,8 @@
 import { Inventory } from "../types";
 
 import { getDb } from "../firebase/firebaseAdmin";
+import { cookies } from "next/headers";
+import admin from "firebase-admin";
 
 const getShopifyAccessTokenById = async (merchantId: string) => {
   const db = await getDb();
@@ -523,6 +525,365 @@ export const deleteProductFromShopify = async (
   }
 };
 
+//function to update product in shopify
+export const updateProductInShopify = async (
+  merchantId: string,
+  productId: string,
+  inventoryData: Omit<Inventory, "id">
+) => {
+  //1. Upadting just a single product with no variants
+  //2. Updating a variant of a product
+  const accessToken = await getShopifyAccessTokenById(merchantId);
+  const shopDomain = await getShopifyShopDomain(merchantId);
+
+  const headers = {
+    "Content-Type": "application/json",
+    "X-Shopify-Access-Token": accessToken,
+  };
+  const productIdArray = productId.split("-");
+
+  const mainProductId = productIdArray[0];
+  let variantId: string;
+
+  if (productIdArray.length === 1) {
+    //fetch the product's single variant
+    const query = `
+    query($productId: ID!) {
+      product(id: $productId) {
+        id
+        title
+        handle
+        variants(first: 10) {
+          nodes {
+            id
+            inventoryItem {
+              id
+            }
+          }
+        }
+      }
+    }`;
+
+    const queryResponse = await fetch(
+      `https://${shopDomain}/admin/api/2023-07/graphql.json`,
+
+      {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify({
+          query,
+          variables: { productId: `gid://shopify/Product/${mainProductId}` },
+        }),
+      }
+    );
+
+    const queryBody = await queryResponse.json();
+    if (
+      queryBody.errors ||
+      queryBody.data.product.variants.nodes.length === 0
+    ) {
+      console.log(queryBody.errors);
+      throw new Error("Failed to fetch product via GraphQL.");
+    }
+
+    variantId = extractNumericId(queryBody.data.product.variants.nodes[0].id);
+  } else {
+    variantId = productIdArray[1];
+  }
+  // Fetch existing media IDs
+  const fetchMediaQuery = `
+query getProductMedia($id: ID!) {
+  product(id: $id) {
+    media(first: 10) {
+      edges {
+        node {
+          id
+        }
+      }
+    }
+  }
+}
+`;
+
+  const mediaResponse = await fetch(
+    `https://${shopDomain}/admin/api/2023-07/graphql.json`,
+    {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        query: fetchMediaQuery,
+        variables: { id: `gid://shopify/Product/${mainProductId}` },
+      }),
+    }
+  );
+
+  const mediaResponseBody = await mediaResponse.json();
+  console.log(mediaResponseBody);
+  const mediaIds = mediaResponseBody.data.product.media.edges.map(
+    (edge: any) => edge.node.id
+  );
+
+  //Delete existing media
+  const deleteMediaMutation = `
+  mutation deleteMedia($ids: [ID!]!, $productId:ID!) {
+    productDeleteMedia(mediaIds: $ids, productId: $productId) {
+      deletedMediaIds
+      userErrors {
+        field
+        message
+      }
+    }
+  }
+  `;
+  const deleteMediaResponse = await fetch(
+    `https://${shopDomain}/admin/api/2023-07/graphql.json`,
+    {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        query: deleteMediaMutation,
+        variables: {
+          ids: mediaIds,
+          productId: `gid://shopify/Product/${mainProductId}`,
+        },
+      }),
+    }
+  );
+  const deleteMediaResponseBody = await deleteMediaResponse.json();
+
+  if (
+    deleteMediaResponseBody.errors ||
+    deleteMediaResponseBody.data.productDeleteMedia.userErrors.length
+  ) {
+    console.error(
+      "GraphQL errors:",
+      deleteMediaResponseBody.errors ||
+        deleteMediaResponseBody.data.productDeleteMedia.userErrors
+    );
+    throw new Error("Failed to delete product via GraphQL.");
+  }
+
+  const updateProductMutation = `
+  mutation updateProduct($input: ProductInput!, $media: [CreateMediaInput!]) {
+    productUpdate(input: $input, media: $media) {
+        product {
+          id
+          title
+          handle
+          variants(first: 10) {
+            nodes {
+              id
+              inventoryItem {
+                id
+              }
+            }
+          }
+        }
+          userErrors {
+            field
+            message
+              }
+            }
+          }
+            `;
+
+  const media = {
+    mediaContentType: "IMAGE",
+    alt: inventoryData.name,
+    originalSource: inventoryData.imageUrl,
+  };
+  const productData = {
+    id: `gid://shopify/Product/${mainProductId}`,
+    title: inventoryData.name,
+    descriptionHtml: `<p>${inventoryData.description}</p>`,
+    productType: inventoryData.category,
+    tags: ["created-through-zippex"],
+  };
+
+  const productUpdateVariant = { input: productData, media: [media] };
+  let inventoryItemId: string;
+  try {
+    const response = await fetch(
+      `https://${shopDomain}/admin/api/2023-07/graphql.json`,
+      {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify({
+          query: updateProductMutation,
+          variables: productUpdateVariant,
+        }),
+      }
+    );
+    const responseBody = await response.json();
+    if (
+      responseBody.errors ||
+      responseBody.data.productUpdate.userErrors.length
+    ) {
+      console.log(responseBody.data.productUpdate.userErrors);
+      throw new Error("Failed to update product via GraphQL.");
+    }
+    inventoryItemId =
+      responseBody.data.productUpdate.product.variants.nodes[0].inventoryItem
+        .id;
+  } catch (error) {
+    console.log(error);
+    throw new Error("Failed to update product via GraphQL.");
+  }
+
+  //update variant specidifc details from here
+
+  //updating price
+  const updateVariantPriceMutation = `
+  mutation updateVariantPrice($id: ID!, $variants: [ProductVariantsBulkInput!]!) {
+    productVariantsBulkUpdate(productId: $id, variants: $variants) {
+      productVariants {
+        id
+        title
+        price
+      }
+      userErrors {
+        field
+        message
+      }
+    }
+  }`;
+
+  const productPriceUpdateVariables = {
+    id: `gid://shopify/Product/${mainProductId}`,
+    variants: [
+      {
+        id: `gid://shopify/ProductVariant/${variantId}`,
+        price: inventoryData.price.toFixed(2),
+      },
+    ],
+  };
+
+  try {
+    const response = await fetch(
+      `https://${shopDomain}/admin/api/2023-07/graphql.json`,
+      {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify({
+          query: updateVariantPriceMutation,
+          variables: productPriceUpdateVariables,
+        }),
+      }
+    );
+    const productPriceUpdateResponseBody = await response.json();
+    if (
+      productPriceUpdateResponseBody.errors ||
+      productPriceUpdateResponseBody.data.productVariantsBulkUpdate.userErrors
+        .length
+    ) {
+      console.log(
+        productPriceUpdateResponseBody.data.productVariantsBulkUpdate.userErrors
+      );
+      throw new Error("Failed to update product variant via GraphQL.");
+    }
+  } catch (error) {
+    console.log(error);
+    throw new Error("Failed to update product variant via GraphQL.");
+  }
+
+  //updating inventory quantity
+
+  try {
+    // Get inventory level id and available quantity
+    const fetchInventoryLevelQuery = `
+    query($inventoryItemId: ID!) {
+      inventoryItem(id: $inventoryItemId) {
+        inventoryLevels(first: 1) {
+          edges {
+            node {
+              id
+              available
+            }
+          }
+        }
+      }
+    }
+    `;
+
+    const inventoryLevelResponse = await fetch(
+      `https://${shopDomain}/admin/api/2023-07/graphql.json`,
+      {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify({
+          query: fetchInventoryLevelQuery,
+          variables: { inventoryItemId },
+        }),
+      }
+    );
+
+    const inventoryLevelResponseBody = await inventoryLevelResponse.json();
+    console.log(inventoryLevelResponseBody);
+    const inventoryLevelNode =
+      inventoryLevelResponseBody.data.inventoryItem.inventoryLevels.edges[0]
+        ?.node;
+
+    if (!inventoryLevelNode) {
+      throw new Error("No inventoryLevelId found for the given inventoryItem.");
+    }
+
+    const inventoryLevelId = inventoryLevelNode.id;
+    const currentAvailableQuantity = inventoryLevelNode.available ?? 0;
+
+    // Calculate the change in inventory
+    const availableDelta = inventoryData.quantity - currentAvailableQuantity;
+
+    // Adjusting inventory quantity
+    const adjustInventoryMutation = `
+    mutation($input: InventoryAdjustQuantityInput!) {
+      inventoryAdjustQuantity(input: $input) {
+        inventoryLevel {
+          id
+          available
+        }
+        userErrors {
+          field
+          message
+        }
+      }
+    }
+    `;
+
+    const inventoryInput = {
+      inventoryLevelId,
+      availableDelta,
+    };
+
+    const inventoryResponse = await fetch(
+      `https://${shopDomain}/admin/api/2023-07/graphql.json`,
+      {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify({
+          query: adjustInventoryMutation,
+          variables: { input: inventoryInput },
+        }),
+      }
+    );
+
+    const inventoryResponseBody = await inventoryResponse.json();
+
+    if (
+      inventoryResponseBody.data.inventoryAdjustQuantity.userErrors.length > 0
+    ) {
+      throw new Error(
+        `Inventory Adjust Errors: ${JSON.stringify(
+          inventoryResponseBody.data.inventoryAdjustQuantity.userErrors
+        )}`
+      );
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Error setting inventory level:", error);
+  }
+};
+
 //helper function to extract the numeric id from the gid
 function extractNumericId(gid: string): string {
   // gid is in the format 'gid://shopify/ResourceType/ID'
@@ -535,3 +896,132 @@ function extractNumericId(gid: string): string {
 function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+//function to delete the whole merchant inventory
+async function deleteMerchantInventory(merchantId: string) {
+  const db = await getDb();
+  // const inventoryRef = collection(db, "merchants", merchantId, "inventory");
+  const inventoryRef = db
+    .collection("merchants")
+    .doc(merchantId)
+    .collection("inventory");
+
+  const snapshot = await inventoryRef.get();
+
+  if (snapshot.empty) {
+    console.log("No inventory to delete.");
+    return;
+  }
+
+  const batchSize = 500; // Firestore allows up to 500 writes per batch
+  // let batch = writeBatch(db);
+  let batch = db.batch();
+  let operationCounter = 0;
+
+  for (const docSnapshot of snapshot.docs) {
+    batch.delete(docSnapshot.ref);
+    operationCounter++;
+
+    if (operationCounter % batchSize === 0) {
+      await batch.commit();
+      batch = db.batch();
+    }
+  }
+
+  // Commit any remaining operations
+  if (operationCounter % batchSize !== 0) {
+    await batch.commit();
+  }
+
+  console.log(
+    `Deleted ${operationCounter} items from inventory of merchant ${merchantId}.`
+  );
+}
+
+//function to add a list of products to the merchant's inventory
+async function addProductsToInventory(
+  merchantId: string,
+  products: Inventory[]
+) {
+  const db = await getDb();
+  // const inventoryRef = collection(db, "merchants", merchantId, "inventory");
+  const inventoryRef = db
+    .collection("merchants")
+    .doc(merchantId)
+    .collection("inventory");
+
+  const batchSize = 500; // Firestore allows up to 500 writes per batch
+  let batch = db.batch();
+  let operationCounter = 0;
+
+  for (const product of products) {
+    const productsWithTimestamp = {
+      ...product,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+    const productRef = inventoryRef.doc(productsWithTimestamp.id);
+
+    batch.set(productRef, productsWithTimestamp);
+    operationCounter++;
+
+    if (operationCounter % batchSize === 0) {
+      await batch.commit();
+      batch = db.batch();
+    }
+  }
+
+  // Commit any remaining operations
+  if (operationCounter % batchSize !== 0) {
+    await batch.commit();
+  }
+
+  console.log(
+    `Added ${products.length} products to inventory of merchant ${merchantId}.`
+  );
+}
+
+//function to manage delete and add of products to the merchant's inventory
+async function updateMerchantInventory(
+  merchantId: string,
+  products: Inventory[]
+) {
+  try {
+    // Step 1: Delete existing inventory
+    await deleteMerchantInventory(merchantId);
+
+    // Step 2: Add new products to inventory
+    await addProductsToInventory(merchantId, products);
+    console.log(`Inventory update completed for merchant ${merchantId}.`);
+  } catch (error) {
+    console.error(
+      `Error updating inventory for merchant ${merchantId}:`,
+      error
+    );
+  }
+}
+
+//function to transfer shopify user to zippex (Inventory, Shop URL and Access Token)
+export const transferShopifyUser = async (merchantId: string) => {
+  const cookieStore = cookies();
+  const accessToken = cookieStore.get("access_token")?.value;
+  const shop = cookieStore.get("shop")?.value;
+  if (!accessToken || !shop) {
+    throw new Error("Access token or shop not found");
+  }
+  const db = await getDb();
+  const merchantDocRef = db.collection("merchants").doc(merchantId);
+  const merchantData = (await merchantDocRef.get()).data();
+  await merchantDocRef.update({
+    ...merchantData,
+    integrationType: "shopify",
+    shopifyAccessToken: accessToken,
+    shopifyShop: shop,
+  });
+
+  try {
+    const products = await fetchAllProducts(shop, accessToken);
+    await updateMerchantInventory(merchantId, products);
+  } catch (error) {
+    console.error("Error:", error);
+  }
+};

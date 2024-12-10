@@ -1,18 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import crypto from "crypto";
+import { cookies } from "next/headers";
 import { createWebhook, validateRequest } from "@/lib/shopify/utils";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-
-  
+  const cookieStore = cookies();
 
   const isValidRequest = await validateRequest(request);
   if (!isValidRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
- 
   const code = searchParams.get("code");
   const shop = searchParams.get("shop");
   console.log("running");
@@ -76,8 +74,21 @@ export async function GET(request: NextRequest) {
         `${process.env.BASE_URL}api/webhooks/shopify/deleteProduct`,
         "products/delete"
       );
+
+      cookieStore.set("access_token", accessToken, {
+        httpOnly: true,
+        secure: true,
+        path: "/",
+        maxAge: 600,
+      });
+      cookieStore.set("shop", shop, {
+        httpOnly: true,
+        secure: true,
+        path: "/",
+        maxAge: 600,
+      });
       return NextResponse.redirect(
-        `${process.env.BASE_URL}dashboard/port-InventoryShopify?access_token=${accessToken}&shop=${shop}`
+        `${process.env.BASE_URL}dashboard/port-InventoryShopify`
       );
     }
   } else {

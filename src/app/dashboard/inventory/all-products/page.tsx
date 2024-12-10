@@ -59,7 +59,7 @@ const Page = () => {
       return previousData;
     },
     onSuccess: (data) => {
-      // update the cached data
+      // update the cached dataW
       toast.success("Product deleted successfully", {
         icon: <Trash2 className="size-4" />,
       });

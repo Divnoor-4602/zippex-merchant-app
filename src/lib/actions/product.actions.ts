@@ -22,6 +22,7 @@ import { description } from "@/components/dashboard/inventory/MostOrderedGraph";
 import {
   addProductToShopify,
   deleteProductFromShopify,
+  updateProductInShopify,
 } from "./shopify.action";
 
 interface DeleteProductProps {
@@ -174,7 +175,7 @@ export async function editProduct(params: EditProductProps) {
       imageUrl,
       merchantId,
     } = params;
-
+    console.log(productId);
     // get the document reference
     const productRef = doc(db, "merchants", merchantId, "inventory", productId);
 
@@ -188,6 +189,37 @@ export async function editProduct(params: EditProductProps) {
       category,
       imageUrl,
     });
+
+    // Get the merchant's document reference
+    const merchantDocRef = doc(db, "merchants", merchantId);
+
+    // Fetch the merchant information
+    const merchantDocSnap = await getDoc(merchantDocRef);
+
+    if (!merchantDocSnap.exists()) {
+      throw new Error("Merchant not found");
+    }
+
+    const merchantData = merchantDocSnap.data();
+    // Check if the merchant has Shopify or Square account
+    const integrationType = merchantData.integrationType;
+
+    if (integrationType === "shopify") {
+      await updateProductInShopify(merchantId, productId.toString(), {
+        name: name ?? "",
+        description: description ?? "",
+        quantity: quantity ?? 0,
+        price: price ?? 0,
+        fragility: fragility ?? 0,
+        category: category ?? "",
+        imageUrl,
+        totalOrders: 0,
+        createdAt: null
+      });
+    } else if (integrationType === "square") {
+      //Updating product in square logic here
+      console.log("square");
+    }
   } catch (error) {
     console.log(error);
     throw new Error("An error occurred while editing the product");
@@ -242,66 +274,66 @@ export async function deleteProduct(props: DeleteProductProps) {
   }
 }
 
-// Replace with your Shopify store domain and access token
-const shopifyStoreDomain = "18fc98-bf.myshopify.com";
-const storefrontAccessToken = "b3706f23c15a6a857d3a372aebfd64bb";
+// // Replace with your Shopify store domain and access token
+// const shopifyStoreDomain = "18fc98-bf.myshopify.com";
+// const storefrontAccessToken = "b3706f23c15a6a857d3a372aebfd64bb";
 
-// Function to fetch all products
-async function fetchAllProducts() {
-  const query = `
-    {
-      products(first: 100) {
-        edges {
-          node {
-            id
-            title
-            description
-            images(first: 5) {
-              edges {
-                node {
-                  src
-                  altText
-                }
-              }
-            }
-            variants(first: 5) {
-              edges {
-                node {
-                  title
-                  priceV2 {
-                    amount
-                    currencyCode
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }`;
+// // Function to fetch all products
+// async function fetchAllProducts() {
+//   const query = `
+//     {
+//       products(first: 100) {
+//         edges {
+//           node {
+//             id
+//             title
+//             description
+//             images(first: 5) {
+//               edges {
+//                 node {
+//                   src
+//                   altText
+//                 }
+//               }
+//             }
+//             variants(first: 5) {
+//               edges {
+//                 node {
+//                   title
+//                   priceV2 {
+//                     amount
+//                     currencyCode
+//                   }
+//                 }
+//               }
+//             }
+//           }
+//         }
+//       }
+//     }`;
 
-  const url = `https://${shopifyStoreDomain}/api/2023-07/graphql.json`;
+//   const url = `https://${shopifyStoreDomain}/api/2023-07/graphql.json`;
 
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Shopify-Storefront-Access-Token": storefrontAccessToken,
-    },
-    body: JSON.stringify({ query }),
-  });
+//   const response = await fetch(url, {
+//     method: "POST",
+//     headers: {
+//       "Content-Type": "application/json",
+//       "X-Shopify-Storefront-Access-Token": storefrontAccessToken,
+//     },
+//     body: JSON.stringify({ query }),
+//   });
 
-  const responseBody = await response.json();
-  return responseBody.data.products.edges;
-}
+//   const responseBody = await response.json();
+//   return responseBody.data.products.edges;
+// }
 
-// Example usage:
-fetchAllProducts()
-  .then((products) => {
-    products.forEach((product: { node: { title: any } }) => {
-      console.log(product.node); // Log product title
-    });
-  })
-  .catch((error) => {
-    console.error("Error fetching products:", error);
-  });
+// // Example usage:
+// fetchAllProducts()
+//   .then((products) => {
+//     products.forEach((product: { node: { title: any } }) => {
+//       console.log(product.node); // Log product title
+//     });
+//   })
+//   .catch((error) => {
+//     console.error("Error fetching products:", error);
+//   });
