@@ -62,6 +62,7 @@ interface EditProductFormProps {
 }
 
 const EditProductForm = ({ product }: EditProductFormProps) => {
+  const merchant = auth.currentUser;
   // const image firebase url on product image upload
   const [productImageUrl, setProductImageUrl] = useState<any>(null);
 
@@ -95,7 +96,7 @@ const EditProductForm = ({ product }: EditProductFormProps) => {
 
   // edit the product using form mutations
   const { mutate: server_editProduct } = useMutation({
-    mutationFn: ({
+    mutationFn: async ({
       values,
       merchantId,
       imageUrl,
@@ -103,13 +104,16 @@ const EditProductForm = ({ product }: EditProductFormProps) => {
       values: z.infer<typeof formSchema>;
       merchantId: string;
       imageUrl: string;
-    }) =>
-      editProduct({
+    }) => {
+      const idToken = await merchant?.getIdToken();
+      return editProduct({
         ...values,
         productId: product.productId,
         merchantId,
         imageUrl,
-      }),
+        merchantIdToken: idToken,
+      });
+    },
     onMutate: async ({ values, merchantId, imageUrl }) => {
       // cancel any ongoing queries
       await queryClient.cancelQueries({

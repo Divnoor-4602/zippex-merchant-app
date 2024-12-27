@@ -17,7 +17,14 @@ import {
   PhoneAuthProvider,
 } from "firebase/auth";
 import { auth, db } from "./firebase";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  where,
+} from "firebase/firestore";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -185,3 +192,51 @@ export async function checkMerchantByEmail(email: string) {
     return false; // Handle errors gracefully
   }
 }
+
+//fetch request to update merchant inventory
+export const updateMerchantInventory = async (
+  dataToUpdate: any,
+  productId: string,
+  merchantId: string,
+  merchantIdToken: string
+) => {
+  if (!merchantIdToken || !dataToUpdate || !merchantIdToken || !productId) {
+    throw new Error("One of the arguments is missing");
+  }
+
+  //get the rest of the product
+  const productRef = doc(db, "merchants", merchantId, "inventory", productId);
+
+  const productSnap = await getDoc(productRef);
+
+  if (!productSnap.exists()) {
+    throw new Error("Product not found");
+  }
+
+  const productDataToUpdate = {
+    ...productSnap.data(),
+    ...dataToUpdate,
+  };
+
+  const response = await fetch(
+    "https://us-central1-zippex-71294.cloudfunctions.net/updateMerchantInventory",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${merchantIdToken}`,
+      },
+      body: JSON.stringify({
+        productData: productDataToUpdate,
+        merchantId,
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    console.log((await response.json()).message);
+    throw new Error("Failed to update merchant inventory");
+  }
+  const data = await response.json();
+  return data;
+};

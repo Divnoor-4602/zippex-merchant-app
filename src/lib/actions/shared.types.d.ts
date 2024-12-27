@@ -54,6 +54,7 @@ export interface EditProductProps {
   fragility?: number;
   category?: string;
   imageUrl?: any;
+  merchantIdToken?: string;
 }
 
 export interface GetMerchantCustomersProps {

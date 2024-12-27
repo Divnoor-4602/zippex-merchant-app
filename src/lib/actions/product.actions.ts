@@ -7,7 +7,6 @@ import {
   doc,
   getDoc,
   getDocs,
-  updateDoc,
 } from "firebase/firestore";
 import { redirect } from "next/navigation";
 import { db } from "../firebase";
@@ -18,12 +17,11 @@ import {
   GetInventoryParams,
   GetProductProps,
 } from "./shared.types";
-import { description } from "@/components/dashboard/inventory/MostOrderedGraph";
 import {
   addProductToShopify,
   deleteProductFromShopify,
-  updateProductInShopify,
 } from "./shopify.action";
+import { updateMerchantInventory } from "../utils";
 
 interface DeleteProductProps {
   merchantId: string;
@@ -174,52 +172,38 @@ export async function editProduct(params: EditProductProps) {
       category,
       imageUrl,
       merchantId,
+      merchantIdToken,
     } = params;
-    console.log(productId);
     // get the document reference
-    const productRef = doc(db, "merchants", merchantId, "inventory", productId);
-
-    // update the product data
-    await updateDoc(productRef, {
-      name,
-      description,
-      quantity,
-      price,
-      fragility,
-      category,
-      imageUrl,
-    });
-
-    // Get the merchant's document reference
-    const merchantDocRef = doc(db, "merchants", merchantId);
-
-    // Fetch the merchant information
-    const merchantDocSnap = await getDoc(merchantDocRef);
-
-    if (!merchantDocSnap.exists()) {
-      throw new Error("Merchant not found");
+    if (
+      !productId ||
+      !name ||
+      !description ||
+      quantity?.toString.length === 0 ||
+      !price ||
+      fragility?.toString.length === 0 ||
+      !category ||
+      !merchantIdToken ||
+      !merchantId
+    ) {
+      throw new Error("One of the arguments is missing");
     }
 
-    const merchantData = merchantDocSnap.data();
-    // Check if the merchant has Shopify or Square account
-    const integrationType = merchantData.integrationType;
-
-    if (integrationType === "shopify") {
-      await updateProductInShopify(merchantId, productId.toString(), {
-        name: name ?? "",
-        description: description ?? "",
-        quantity: quantity ?? 0,
-        price: price ?? 0,
-        fragility: fragility ?? 0,
-        category: category ?? "",
+    //testing the update merchant inventory function
+    await updateMerchantInventory(
+      {
+        name,
+        description,
+        quantity: quantity!,
+        price,
+        fragility: fragility!,
+        category,
         imageUrl,
-        totalOrders: 0,
-        createdAt: null
-      });
-    } else if (integrationType === "square") {
-      //Updating product in square logic here
-      console.log("square");
-    }
+      },
+      productId,
+      merchantId,
+      merchantIdToken
+    );
   } catch (error) {
     console.log(error);
     throw new Error("An error occurred while editing the product");

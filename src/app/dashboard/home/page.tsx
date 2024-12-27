@@ -305,9 +305,38 @@ const Page = () => {
       <PaginationEnd />
     );
 
+  const handleTestButton = async () => {
+    const idToken = await merchant?.getIdToken();
+    const response = await fetch(
+      "https://us-central1-zippex-71294.cloudfunctions.net/updateMerchantInventory",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({
+          name: "John Doe",
+          email: "johndoe@example.com",
+          phoneNumber: "1234567890",
+        }),
+      }
+    );
+    const data = await response.json();
+    console.log(data);
+  };
+
   return (
     <>
       <main className="grid md:grid-cols-4 sm:grid-cols-2 grid-cols-1 gap-4 max-md:mb-6 pb-10">
+        {/* <div className="absolute top-0 right-0 z-50 w-screen h-screen bg-black/50 flex items-center justify-center">
+          <button
+            className="p-2 text-white bg-brandblue rounded-xl px-4 py-2 active:scale-95 hover:scale-105 transition-transform"
+            onClick={handleTestButton}
+          >
+            Test Button
+          </button>
+        </div> */}
         {/* total revenue */}
         <DashboardCard
           title="Total Revenue"
