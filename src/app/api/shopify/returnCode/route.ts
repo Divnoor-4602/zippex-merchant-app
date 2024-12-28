@@ -75,6 +75,13 @@ export async function GET(request: NextRequest) {
         "products/delete"
       );
 
+      await createWebhook(
+        shop,
+        accessToken,
+        `${process.env.BASE_URL}api/webhooks/shopify/uninstallApp`,
+        "app/uninstalled"
+      );
+
       cookieStore.set("access_token", accessToken, {
         httpOnly: true,
         secure: true,
