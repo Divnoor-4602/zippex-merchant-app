@@ -73,13 +73,15 @@ export async function POST(req: NextRequest, res: NextResponse) {
   }
 
   try {
-    const merchantInventory = await getMerchantInventoryRef(merchantData.uid);
     const merchantRef = db.collection("merchants").doc(merchantData.uid);
-    await merchantRef.update({
+    console.log("checking shit");
+    const repsons = await merchantRef.update({
       integrationType: "none",
       shopifyAccessToken: null,
       shopifyShop: null,
     });
+    console.log(repsons);
+    console.log("checking shit after");
   } catch (error) {
     console.error("Error uninstalling shopify app:", error);
   }
