@@ -10,7 +10,7 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(req: NextRequest, res: NextResponse) {
   const db = await getDb();
   const webhookTopid = req.headers.get("X-Shopify-Topic");
-  if (webhookTopid !== "products/delete") {
+  if (webhookTopid !== "app/uninstalled") {
     return NextResponse.json(
       { message: "Topic not to be handled here" },
       { status: 200 }
@@ -74,14 +74,11 @@ export async function POST(req: NextRequest, res: NextResponse) {
 
   try {
     const merchantRef = db.collection("merchants").doc(merchantData.uid);
-    console.log("checking shit");
     const repsons = await merchantRef.update({
       integrationType: "none",
       shopifyAccessToken: null,
       shopifyShop: null,
     });
-    console.log(repsons);
-    console.log("checking shit after");
   } catch (error) {
     console.error("Error uninstalling shopify app:", error);
   }
