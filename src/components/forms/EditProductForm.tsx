@@ -184,7 +184,7 @@ const EditProductForm = ({ product }: EditProductFormProps) => {
       toast.error("An error occurred while updating the product");
     }
   };
-
+  console.log(product.imageUrl);
   return (
     <>
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>

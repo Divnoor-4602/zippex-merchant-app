@@ -9,6 +9,7 @@ import { useState } from "react";
 import { auth, db, storage } from "@/lib/firebase";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { toast } from "sonner";
+import ImageWithFallback from "@/components/shared/FallbackImage";
 
 interface UploadProductImageProps {
   handleProductImageUrl: (file: any) => void;
@@ -67,7 +68,7 @@ const UploadDropzone = ({
                     </>
                   ) : existingImageUrl ? (
                     <>
-                      <Image
+                      <ImageWithFallback
                         src={existingImageUrl}
                         alt="product image"
                         width={200}

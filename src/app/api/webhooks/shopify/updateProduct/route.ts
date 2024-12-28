@@ -75,6 +75,23 @@ export async function POST(req: NextRequest, res: NextResponse) {
   }
 
   console.log("running before");
+  //checking if webhook is already processed
+  await cleanUpMemoryForUpdate();
+  if (await checkIfWebhookIsProcessedForUpdate(webhookData.id)) {
+    return NextResponse.json(
+      { message: "Webhook already processed" },
+      {
+        status: 200,
+      }
+    );
+  }
+  console.log("running after");
+
+  // adding webhook to processed memory
+  await addWebhookToMemoryForUpdate(webhookData.id, Date.now() + 2000);
+
+  // Process the webhook data as needed
+  
   // Check if the product was created via API
   const isCreatedByAPI =
     webhookData.tags && webhookData.tags.includes("created-through-zippex");
@@ -99,7 +116,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
       id: webhookData.admin_graphql_api_id,
       tags: [], // Remove all tags or specify tags to retain
     };
-
+    
     const accessToken = await getShopifyAccessTokenByShop(shopUrl);
 
     const response = await fetch(
@@ -135,22 +152,6 @@ export async function POST(req: NextRequest, res: NextResponse) {
     return NextResponse.json({ message: "Product updated successfully." });
   }
 
-  //checking if webhook is already processed
-  await cleanUpMemoryForUpdate();
-  if (await checkIfWebhookIsProcessedForUpdate(webhookData.id)) {
-    return NextResponse.json(
-      { message: "Webhook already processed" },
-      {
-        status: 200,
-      }
-    );
-  }
-  console.log("running after");
-
-  // adding webhook to processed memory
-  await addWebhookToMemoryForUpdate(webhookData.id, Date.now() + 2000);
-
-  // Process the webhook data as needed
 
   const merchantData = await fetchMerchantDataFromStoreUrl(shopUrl);
   if (!merchantData) {
